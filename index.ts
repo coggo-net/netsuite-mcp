@@ -1,11 +1,12 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createServer } from "./src/server.ts";
+import { logger } from "./src/logger.ts";
 
 const sessions = new Map<string, WebStandardStreamableHTTPServerTransport>();
 
 async function handleMcpRequest(req: Request): Promise<Response> {
 	const sessionId = req.headers.get("mcp-session-id");
-	console.log(`${req.method} /mcp session=${sessionId ?? "new"}`);
+	logger.info({ method: req.method, session: sessionId ?? "new" }, "mcp request");
 
 	// Existing session — route to its transport
 	if (sessionId && sessions.has(sessionId)) {
@@ -17,9 +18,11 @@ async function handleMcpRequest(req: Request): Promise<Response> {
 		sessionIdGenerator: () => crypto.randomUUID(),
 		onsessioninitialized: (id) => {
 			sessions.set(id, transport);
+			logger.info({ session: id }, "session initialized");
 		},
 		onsessionclosed: (id) => {
 			sessions.delete(id);
+			logger.info({ session: id }, "session closed");
 		},
 	});
 
@@ -51,4 +54,4 @@ Bun.serve({
 	},
 });
 
-console.log(`NetSuite MCP server running on http://0.0.0.0:${port}/mcp`);
+logger.info({ port, hostname: "0.0.0.0" }, "NetSuite MCP server started");

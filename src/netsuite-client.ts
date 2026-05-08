@@ -1,3 +1,5 @@
+import { logger } from "./logger.ts";
+
 export interface NetSuiteConfig {
 	accountId: string;
 	consumerKey: string;
@@ -119,9 +121,11 @@ export class NetSuiteClient {
 			...options?.headers,
 		};
 
-		const signal = options?.timeout
-			? AbortSignal.timeout(options.timeout)
-			: undefined;
+		const timeout = options?.timeout ?? 30_000;
+		const signal = AbortSignal.timeout(timeout);
+
+		const start = Date.now();
+		logger.info({ method, path }, "netsuite request");
 
 		const res = await fetch(url, {
 			method,
@@ -129,6 +133,8 @@ export class NetSuiteClient {
 			body: options?.body ? JSON.stringify(options.body) : undefined,
 			signal,
 		});
+
+		logger.info({ method, path, status: res.status, duration: Date.now() - start }, "netsuite response");
 
 		if (!res.ok) {
 			const text = await res.text();
