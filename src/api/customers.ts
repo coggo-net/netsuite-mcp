@@ -25,12 +25,15 @@ export function registerCustomerAPI(client: NetSuiteClient) {
 		},
 
 		search(keyword: string, params: Omit<ListParams, "q"> = {}) {
-			return client.listRecords(RECORD_TYPE, { ...params, q: keyword });
+			return client.listRecords(RECORD_TYPE, {
+				...params,
+				q: `companyName CONTAIN "${keyword}"`,
+			});
 		},
 
 		searchBySQL(where: string, limit = 100) {
 			return client.suiteQL(
-				`SELECT id, entityId, companyName, firstName, lastName, email, phone, balance, overdueBalance, isInactive FROM customer WHERE ${where}`,
+				`SELECT id, entityId, companyName, email, phone, isInactive FROM customer WHERE ${where}`,
 				{ limit },
 			);
 		},

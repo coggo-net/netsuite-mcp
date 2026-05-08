@@ -25,7 +25,10 @@ export function registerInventoryAPI(client: NetSuiteClient) {
 		},
 
 		search(keyword: string, params: Omit<ListParams, "q"> = {}) {
-			return client.listRecords(RECORD_TYPE, { ...params, q: keyword });
+			return client.listRecords(RECORD_TYPE, {
+				...params,
+				q: `itemId CONTAIN "${keyword}"`,
+			});
 		},
 
 		queryStock(itemIds: string[]) {

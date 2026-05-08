@@ -25,7 +25,10 @@ export function registerPurchaseOrderAPI(client: NetSuiteClient) {
 		},
 
 		search(keyword: string, params: Omit<ListParams, "q"> = {}) {
-			return client.listRecords(RECORD_TYPE, { ...params, q: keyword });
+			return client.listRecords(RECORD_TYPE, {
+				...params,
+				q: `tranId CONTAIN "${keyword}"`,
+			});
 		},
 
 		searchBySQL(where: string, limit = 100) {

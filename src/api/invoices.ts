@@ -25,19 +25,22 @@ export function registerInvoiceAPI(client: NetSuiteClient) {
 		},
 
 		search(keyword: string, params: Omit<ListParams, "q"> = {}) {
-			return client.listRecords(RECORD_TYPE, { ...params, q: keyword });
+			return client.listRecords(RECORD_TYPE, {
+				...params,
+				q: `tranId CONTAIN "${keyword}"`,
+			});
 		},
 
 		searchBySQL(where: string, limit = 100) {
 			return client.suiteQL(
-				`SELECT id, tranId, tranDate, entity, status, total, amountPaid, amountRemaining, dueDate, memo FROM transaction WHERE type = 'CustInvc' AND ${where}`,
+				`SELECT id, tranId, tranDate, entity, status, total, foreignAmountUnpaid, dueDate, memo FROM transaction WHERE type = 'CustInvc' AND ${where}`,
 				{ limit },
 			);
 		},
 
 		getOverdue(limit = 100) {
 			return client.suiteQL(
-				`SELECT id, tranId, tranDate, entity, total, amountRemaining, dueDate FROM transaction WHERE type = 'CustInvc' AND status = 'CustInvc:A' AND dueDate < SYSDATE ORDER BY dueDate ASC`,
+				`SELECT id, tranId, tranDate, entity, total, foreignAmountUnpaid, dueDate FROM transaction WHERE type = 'CustInvc' AND foreignAmountUnpaid > 0 AND dueDate < SYSDATE ORDER BY dueDate ASC`,
 				{ limit },
 			);
 		},
