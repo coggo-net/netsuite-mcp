@@ -34,7 +34,15 @@ export class NetSuiteClient {
 			oauth_version: "1.0",
 		};
 
-		// Build base string
+		// Include query params in signature base string per OAuth 1.0 spec
+		const [urlBase, queryString] = url.split("?");
+		if (queryString) {
+			for (const part of queryString.split("&")) {
+				const [k, v] = part.split("=");
+				if (k) params[decodeURIComponent(k)] = decodeURIComponent(v ?? "");
+			}
+		}
+
 		const sortedParams = Object.keys(params)
 			.sort()
 			.map(
@@ -43,7 +51,6 @@ export class NetSuiteClient {
 			)
 			.join("&");
 
-		const [urlBase] = url.split("?");
 		const baseString = [
 			method.toUpperCase(),
 			encodeURIComponent(urlBase),
@@ -69,6 +76,7 @@ export class NetSuiteClient {
 		params.oauth_signature = signature;
 
 		const header = Object.keys(params)
+			.filter((k) => k.startsWith("oauth_"))
 			.sort()
 			.map(
 				(k) =>
@@ -82,7 +90,11 @@ export class NetSuiteClient {
 	async request(
 		method: string,
 		path: string,
-		body?: unknown,
+		options?: {
+			body?: unknown;
+			headers?: Record<string, string>;
+			timeout?: number;
+		},
 	): Promise<unknown> {
 		const url = `${this.baseUrl}${path}`;
 		const authHeader = await this.buildAuthHeader(method, url);
@@ -91,12 +103,18 @@ export class NetSuiteClient {
 			Authorization: authHeader,
 			"Content-Type": "application/json",
 			Accept: "application/json",
+			...options?.headers,
 		};
+
+		const signal = options?.timeout
+			? AbortSignal.timeout(options.timeout)
+			: undefined;
 
 		const res = await fetch(url, {
 			method,
 			headers,
-			body: body ? JSON.stringify(body) : undefined,
+			body: options?.body ? JSON.stringify(options.body) : undefined,
+			signal,
 		});
 
 		if (!res.ok) {
