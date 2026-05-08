@@ -5,6 +5,7 @@ const sessions = new Map<string, WebStandardStreamableHTTPServerTransport>();
 
 async function handleMcpRequest(req: Request): Promise<Response> {
 	const sessionId = req.headers.get("mcp-session-id");
+	console.log(`${req.method} /mcp session=${sessionId ?? "new"}`);
 
 	// Existing session — route to its transport
 	if (sessionId && sessions.has(sessionId)) {
@@ -50,4 +51,4 @@ Bun.serve({
 	},
 });
 
-console.log(`NetSuite MCP server running on http://localhost:${port}/mcp`);
+console.log(`NetSuite MCP server running on http://0.0.0.0:${port}/mcp`);
