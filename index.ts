@@ -12,6 +12,7 @@ await server.connect(transport);
 const port = Number(process.env.PORT) || 3000;
 
 Bun.serve({
+	hostname: "0.0.0.0",
 	port,
 	routes: {
 		"/mcp": {
