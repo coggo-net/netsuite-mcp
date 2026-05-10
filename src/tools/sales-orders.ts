@@ -115,7 +115,7 @@ Example — create a Pro-Forma Invoice:
 }`,
 		{
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe(
 					"Sales order / PI fields — see tool description for available fields and examples",
 				),
@@ -140,7 +140,7 @@ Example: {"memo": "Updated memo", "shipDate": "2026-06-01"}`,
 		{
 			id: z.string().describe("Sales order internal ID"),
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe("Fields to update — see tool description"),
 		},
 		async ({ id, data }) => {

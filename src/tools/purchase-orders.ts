@@ -113,7 +113,7 @@ Example:
 }`,
 		{
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe(
 					"Purchase order fields — see tool description for available fields and examples",
 				),
@@ -138,7 +138,7 @@ Example: {"memo": "Updated PO", "dueDate": "2026-06-15"}`,
 		{
 			id: z.string().describe("Purchase order internal ID"),
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe("Fields to update — see tool description"),
 		},
 		async ({ id, data }) => {
@@ -187,7 +187,7 @@ Example:
 }`,
 		{
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe(
 					"Item receipt data — see tool description for fields and example",
 				),

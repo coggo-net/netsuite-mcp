@@ -33,12 +33,26 @@ export interface ListResult<T = Record<string, unknown>> {
 export class NetSuiteClient {
 	private config: NetSuiteConfig;
 	private baseUrl: string;
+	private signingKey: CryptoKey | null = null;
 
 	constructor(config: NetSuiteConfig) {
 		this.config = config;
 		this.baseUrl =
 			config.baseUrl ??
 			`https://${config.accountId}.suitetalk.api.netsuite.com/services/rest`;
+	}
+
+	private async getSigningKey(): Promise<CryptoKey> {
+		if (this.signingKey) return this.signingKey;
+		const raw = `${encodeURIComponent(this.config.consumerSecret)}&${encodeURIComponent(this.config.tokenSecret)}`;
+		this.signingKey = await crypto.subtle.importKey(
+			"raw",
+			new TextEncoder().encode(raw),
+			{ name: "HMAC", hash: "SHA-256" },
+			false,
+			["sign"],
+		);
+		return this.signingKey;
 	}
 
 	private async buildAuthHeader(method: string, url: string): Promise<string> {
@@ -55,7 +69,7 @@ export class NetSuiteClient {
 		};
 
 		// Include query params in signature per OAuth 1.0 spec
-		const [urlBase, queryString] = url.split("?");
+		const [urlBase, queryString] = url.split("?") as [string, string | undefined];
 		if (queryString) {
 			for (const part of queryString.split("&")) {
 				const [k, v] = part.split("=");
@@ -77,14 +91,7 @@ export class NetSuiteClient {
 			encodeURIComponent(sortedParams),
 		].join("&");
 
-		const signingKey = `${encodeURIComponent(this.config.consumerSecret)}&${encodeURIComponent(this.config.tokenSecret)}`;
-		const key = await crypto.subtle.importKey(
-			"raw",
-			new TextEncoder().encode(signingKey),
-			{ name: "HMAC", hash: "SHA-256" },
-			false,
-			["sign"],
-		);
+		const key = await this.getSigningKey();
 		const sig = await crypto.subtle.sign(
 			"HMAC",
 			key,

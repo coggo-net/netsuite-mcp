@@ -135,7 +135,7 @@ Example — create standalone invoice:
 }`,
 		{
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe(
 					"Invoice fields — see tool description for available fields and examples",
 				),
@@ -160,7 +160,7 @@ Example: {"memo": "Updated", "dueDate": "2026-07-01"}`,
 		{
 			id: z.string().describe("Invoice internal ID"),
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe("Fields to update — see tool description"),
 		},
 		async ({ id, data }) => {

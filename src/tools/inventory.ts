@@ -104,7 +104,7 @@ Example:
 }`,
 		{
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe(
 					"Inventory item fields — see tool description for available fields and examples",
 				),
@@ -129,7 +129,7 @@ Example: {"displayName": "New Name", "cost": 15.00, "isInactive": false}`,
 		{
 			id: z.string().describe("Inventory item internal ID"),
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe("Fields to update — see tool description"),
 		},
 		async ({ id, data }) => {
@@ -166,7 +166,7 @@ Example:
 }`,
 		{
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe(
 					"Inventory adjustment data — see tool description for fields and example",
 				),
@@ -205,7 +205,7 @@ Example:
 }`,
 		{
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe(
 					"Inventory transfer data — see tool description for fields and example",
 				),

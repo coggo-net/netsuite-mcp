@@ -1,23 +1,43 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
-import { createServer } from "./src/server.ts";
 import { logger } from "./src/logger.ts";
+import { createMcpServer, createRestServer } from "./src/server.ts";
 
-const sessions = new Map<string, WebStandardStreamableHTTPServerTransport>();
+// ─── MCP sessions ──────────────────────────────────────────────────
+
+interface SessionEntry {
+	transport: WebStandardStreamableHTTPServerTransport;
+	lastAccess: number;
+}
+
+const sessions = new Map<string, SessionEntry>();
+
+const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
+setInterval(() => {
+	const now = Date.now();
+	for (const [id, entry] of sessions) {
+		if (now - entry.lastAccess > SESSION_TTL_MS) {
+			sessions.delete(id);
+			logger.info({ session: id }, "session expired");
+		}
+	}
+}, 60 * 1000);
 
 async function handleMcpRequest(req: Request): Promise<Response> {
 	const sessionId = req.headers.get("mcp-session-id");
 	logger.info({ method: req.method, session: sessionId ?? "new" }, "mcp request");
 
-	// Existing session — route to its transport
-	if (sessionId && sessions.has(sessionId)) {
-		return sessions.get(sessionId)!.handleRequest(req);
+	if (sessionId) {
+		const entry = sessions.get(sessionId);
+		if (entry) {
+			entry.lastAccess = Date.now();
+			return entry.transport.handleRequest(req);
+		}
 	}
 
-	// New session — create a fresh transport + server
 	const transport = new WebStandardStreamableHTTPServerTransport({
 		sessionIdGenerator: () => crypto.randomUUID(),
 		onsessioninitialized: (id) => {
-			sessions.set(id, transport);
+			sessions.set(id, { transport, lastAccess: Date.now() });
 			logger.info({ session: id }, "session initialized");
 		},
 		onsessionclosed: (id) => {
@@ -32,11 +52,17 @@ async function handleMcpRequest(req: Request): Promise<Response> {
 		}
 	};
 
-	const server = createServer();
+	const server = createMcpServer();
 	await server.connect(transport);
 
 	return transport.handleRequest(req);
 }
+
+// ─── REST API (OpenAPI) ────────────────────────────────────────────
+
+const { routes: restRoutes, openapi: openapiSpec } = createRestServer();
+
+// ─── Start server ──────────────────────────────────────────────────
 
 const port = Number(process.env.PORT) || 3000;
 
@@ -45,13 +71,19 @@ Bun.serve({
 	port,
 	idleTimeout: 0,
 	routes: {
+		// MCP endpoint
 		"/mcp": {
 			POST: (req) => handleMcpRequest(req),
 			GET: (req) => handleMcpRequest(req),
 			DELETE: (req) => handleMcpRequest(req),
 		},
+		// REST API
+		...restRoutes,
+		// OpenAPI spec (dynamically generated from route definitions)
+		"/api/openapi.json": () => Response.json(openapiSpec),
+		// Health
 		"/health": new Response("ok"),
 	},
 });
 
-logger.info({ port, hostname: "0.0.0.0" }, "NetSuite MCP server started");
+logger.info({ port, hostname: "0.0.0.0" }, "NetSuite MCP + OpenAPI server started");

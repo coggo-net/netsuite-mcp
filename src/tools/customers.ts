@@ -112,7 +112,7 @@ Example — create an individual customer:
 }`,
 		{
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe(
 					"Customer record fields — see tool description for available fields and examples",
 				),
@@ -138,7 +138,7 @@ Example: {"email": "new@example.com", "creditLimit": 50000, "terms": {"id": "3"}
 		{
 			id: z.string().describe("Customer internal ID"),
 			data: z
-				.record(z.unknown())
+				.record(z.string(), z.unknown())
 				.describe(
 					"Fields to update — see tool description for available fields",
 				),

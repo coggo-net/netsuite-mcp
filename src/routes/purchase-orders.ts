@@ -1,0 +1,94 @@
+import type { PurchaseOrderAPI } from "../api/purchase-orders.ts";
+import {
+	defineRoute,
+	paginationQuery,
+	searchQuery,
+	sqlSearchBody,
+	type RouteDef,
+} from "./framework.ts";
+
+export function purchaseOrderRoutes(api: PurchaseOrderAPI): RouteDef[] {
+	return [
+		defineRoute({
+			method: "get",
+			path: "/api/purchase-orders",
+			operationId: "purchase_order_list",
+			summary: "List purchase orders",
+			description:
+				"List purchase orders from NetSuite. Returns paginated purchase order records.",
+			query: paginationQuery,
+			handler: async ({ query }) => api.list(query),
+		}),
+		defineRoute({
+			method: "get",
+			path: "/api/purchase-orders/search",
+			operationId: "purchase_order_search",
+			summary: "Search purchase orders by transaction ID",
+			description:
+				"Search purchase orders by transaction ID keyword (e.g. 'PO000' to find matching POs).",
+			query: searchQuery,
+			handler: async ({ query }) =>
+				api.search(query.keyword, { limit: query.limit }),
+		}),
+		defineRoute({
+			method: "post",
+			path: "/api/purchase-orders/search-sql",
+			operationId: "purchase_order_search_sql",
+			summary: "Query purchase orders with SuiteQL",
+			description:
+				"Query purchase orders using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, memo. Status codes: B=Pending Receipt, G=Fully Received, H=Closed.",
+			body: sqlSearchBody,
+			handler: async ({ body }) => api.searchBySQL(body.where, body.limit),
+		}),
+		defineRoute({
+			method: "post",
+			path: "/api/purchase-orders/receive",
+			operationId: "purchase_order_receive",
+			summary: "Receive items against a purchase order",
+			description:
+				"Create an item receipt to record physical receipt of goods. Key fields: createdFrom (PO ID, required), tranDate, memo, item ({items: [{item, quantity, location}]}).",
+			successStatus: 201,
+			handler: async ({ body }) =>
+				api.receive(body as Record<string, unknown>),
+		}),
+		defineRoute({
+			method: "get",
+			path: "/api/purchase-orders/:id",
+			operationId: "purchase_order_get",
+			summary: "Get a purchase order by ID",
+			description:
+				"Get a single purchase order by internal ID. Returns all fields including vendor, line items, amounts, shipping details, approval status, and custom fields.",
+			handler: async ({ params }) => api.get(params.id),
+		}),
+		defineRoute({
+			method: "post",
+			path: "/api/purchase-orders",
+			operationId: "purchase_order_create",
+			summary: "Create a purchase order",
+			description:
+				"Create a new purchase order. Key fields: entity (vendor, required), subsidiary, tranDate, dueDate, memo, currency, location, department, employee, terms, item ({items: [{item, quantity, rate}]}).",
+			successStatus: 201,
+			handler: async ({ body }) =>
+				api.create(body as Record<string, unknown>),
+		}),
+		defineRoute({
+			method: "patch",
+			path: "/api/purchase-orders/:id",
+			operationId: "purchase_order_update",
+			summary: "Update a purchase order",
+			description:
+				"Update an existing purchase order (PATCH). Updatable: memo, dueDate, shipDate, exchangeRate, location, department, employee, terms, etc.",
+			handler: async ({ params, body }) =>
+				api.update(params.id, body as Record<string, unknown>),
+		}),
+		defineRoute({
+			method: "delete",
+			path: "/api/purchase-orders/:id",
+			operationId: "purchase_order_delete",
+			summary: "Delete a purchase order",
+			description:
+				"Delete a purchase order by internal ID. This action is irreversible.",
+			handler: async ({ params }) => api.delete(params.id),
+		}),
+	];
+}
