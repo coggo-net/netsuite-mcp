@@ -1,8 +1,6 @@
 import { z } from "zod";
 import { logger } from "../logger.ts";
 
-// ─── Type-level path param extraction ──────────────────────────────
-
 type ExtractParams<P extends string> =
 	P extends `${string}:${infer Param}/${infer Rest}`
 		? Param | ExtractParams<`/${Rest}`>
@@ -12,7 +10,9 @@ type ExtractParams<P extends string> =
 
 type ParamsOf<P extends string> = Record<ExtractParams<P>, string>;
 
-// ─── Shared query schemas ──────────────────────────────────────────
+export const limitQuery = z.object({
+	limit: z.number().optional().describe("Max records to return"),
+});
 
 export const paginationQuery = z.object({
 	limit: z.number().optional().describe("Max records to return"),
@@ -28,8 +28,6 @@ export const sqlSearchBody = z.object({
 	where: z.string().describe("SuiteQL WHERE clause"),
 	limit: z.number().optional().describe("Max records (default 100)"),
 });
-
-// ─── Route definition ──────────────────────────────────────────────
 
 export interface RouteDef {
 	method: "get" | "post" | "patch" | "delete";
@@ -49,12 +47,6 @@ interface RouteContext {
 	params: Record<string, string>;
 }
 
-/**
- * Create a typed route definition. The handler receives:
- * - `query` typed from the Zod query schema
- * - `body` typed from the Zod body schema
- * - `params` typed from the path's `:param` segments
- */
 export function defineRoute<
 	const Path extends string,
 	Q extends z.ZodObject<Record<string, z.ZodType>> | undefined = undefined,
@@ -74,12 +66,8 @@ export function defineRoute<
 		params: ParamsOf<Path>;
 	}) => Promise<unknown>;
 }): RouteDef {
-	// The handler has narrower parameter types than RouteDef (e.g. typed body/params),
-	// but this is safe because buildBunRoutes passes correctly-shaped values at runtime.
 	return def as unknown as RouteDef;
 }
-
-// ─── JSON Schema helpers ───────────────────────────────────────────
 
 interface JsonSchemaProperty {
 	type?: string;
@@ -110,8 +98,6 @@ function queryJsonSchema(
 	return cached;
 }
 
-// ─── Build Bun routes from definitions ─────────────────────────────
-
 export function buildBunRoutes(defs: RouteDef[]) {
 	const routes: Record<
 		string,
@@ -122,18 +108,23 @@ export function buildBunRoutes(defs: RouteDef[]) {
 		const { path } = def;
 		if (!routes[path]) routes[path] = {};
 
-		// Pre-compute numeric query fields for coercion
 		const numericFields = new Set<string>();
+		const queryKeys: string[] = [];
 		if (def.query) {
 			const qs = queryJsonSchema(def.query);
 			for (const [k, v] of Object.entries(qs.properties ?? {})) {
+				queryKeys.push(k);
 				if (v.type === "number" || v.type === "integer") {
 					numericFields.add(k);
 				}
 			}
 		}
 
+		const logCtx = { method: def.method, path: def.path, operationId: def.operationId };
+
 		routes[path]![def.method.toUpperCase()] = async (req: Request) => {
+			const start = Date.now();
+			logger.info(logCtx, "api request");
 			try {
 				const url = new URL(req.url);
 				const reqParams = (
@@ -141,12 +132,10 @@ export function buildBunRoutes(defs: RouteDef[]) {
 				).params;
 
 				const query: Record<string, unknown> = {};
-				if (def.query) {
-					for (const key of Object.keys(def.query.shape)) {
-						const val = url.searchParams.get(key);
-						if (val != null) {
-							query[key] = numericFields.has(key) ? Number(val) : val;
-						}
+				for (const key of queryKeys) {
+					const val = url.searchParams.get(key);
+					if (val != null) {
+						query[key] = numericFields.has(key) ? Number(val) : val;
 					}
 				}
 
@@ -163,15 +152,12 @@ export function buildBunRoutes(defs: RouteDef[]) {
 					body: bodyData,
 					params: reqParams,
 				});
-				return Response.json(result, {
-					status: def.successStatus ?? 200,
-				});
+				const status = def.successStatus ?? 200;
+				logger.info({ ...logCtx, status, duration: Date.now() - start }, "api response");
+				return Response.json(result, { status });
 			} catch (e) {
 				const message = e instanceof Error ? e.message : String(e);
-				logger.error(
-					{ err: e, operationId: def.operationId },
-					"api error",
-				);
+				logger.error({ ...logCtx, duration: Date.now() - start, err: message }, "api error");
 				return Response.json({ error: message }, { status: 500 });
 			}
 		};
@@ -179,8 +165,6 @@ export function buildBunRoutes(defs: RouteDef[]) {
 
 	return routes;
 }
-
-// ─── Build OpenAPI spec from definitions ───────────────────────────
 
 export function buildOpenAPISpec(defs: RouteDef[]) {
 	const paths: Record<string, Record<string, unknown>> = {};
@@ -198,10 +182,7 @@ export function buildOpenAPISpec(defs: RouteDef[]) {
 					description: "Successful response",
 					content: {
 						"application/json": {
-							schema: {
-								type: "object",
-								additionalProperties: true,
-							},
+							schema: { type: "object", additionalProperties: true },
 						},
 					},
 				},
@@ -244,9 +225,7 @@ export function buildOpenAPISpec(defs: RouteDef[]) {
 				required: true,
 				content: {
 					"application/json": {
-						schema: z.toJSONSchema(def.body, {
-							unrepresentable: "any",
-						}),
+						schema: z.toJSONSchema(def.body, { unrepresentable: "any" }),
 					},
 				},
 			};
@@ -255,10 +234,7 @@ export function buildOpenAPISpec(defs: RouteDef[]) {
 				required: true,
 				content: {
 					"application/json": {
-						schema: {
-							type: "object",
-							additionalProperties: true,
-						},
+						schema: { type: "object", additionalProperties: true },
 					},
 				},
 			};
@@ -271,8 +247,7 @@ export function buildOpenAPISpec(defs: RouteDef[]) {
 		openapi: "3.1.0",
 		info: {
 			title: "NetSuite API",
-			description:
-				"REST API for managing NetSuite records — customers, inventory, sales orders, invoices, purchase orders, and raw SuiteQL queries.",
+			description: "REST API for managing NetSuite records — customers, inventory, sales orders, invoices, purchase orders, and raw SuiteQL queries.",
 			version: "1.0.0",
 		},
 		paths,

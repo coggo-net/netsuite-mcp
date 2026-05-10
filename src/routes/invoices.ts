@@ -1,7 +1,7 @@
-import { z } from "zod";
 import type { InvoiceAPI } from "../api/invoices.ts";
 import {
 	defineRoute,
+	limitQuery,
 	paginationQuery,
 	searchQuery,
 	sqlSearchBody,
@@ -48,9 +48,7 @@ export function invoiceRoutes(api: InvoiceAPI): RouteDef[] {
 			summary: "Get overdue invoices",
 			description:
 				"Get all overdue invoices — invoices with unpaid balance where due date is past. Returns id, tranId, tranDate, entity, total, foreignAmountUnpaid, dueDate ordered by due date ascending.",
-			query: z.object({
-				limit: z.number().optional().describe("Max records to return (default 100)"),
-			}),
+			query: limitQuery,
 			handler: async ({ query }) => api.getOverdue(query.limit),
 		}),
 		defineRoute({

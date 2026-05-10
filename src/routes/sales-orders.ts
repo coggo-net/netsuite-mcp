@@ -1,8 +1,8 @@
-import { z } from "zod";
 import type { ProformaInvoiceAPI } from "../api/proforma-invoices.ts";
 import type { SalesOrderAPI } from "../api/sales-orders.ts";
 import {
 	defineRoute,
+	limitQuery,
 	paginationQuery,
 	searchQuery,
 	sqlSearchBody,
@@ -92,9 +92,7 @@ export function salesOrderRoutes(
 			summary: "List recent Pro-Forma Invoices",
 			description:
 				"List recent Pro-Forma Invoices ordered by date descending. Returns tranId, tranDate, entity, status, total, and memo via SuiteQL.",
-			query: z.object({
-				limit: z.number().optional().describe("Max records to return (default 20)"),
-			}),
+			query: limitQuery,
 			handler: async ({ query }) => piApi.listRecent(query.limit),
 		}),
 		defineRoute({

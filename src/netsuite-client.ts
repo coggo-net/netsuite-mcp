@@ -1,5 +1,7 @@
 import { logger } from "./logger.ts";
 
+const textEncoder = new TextEncoder();
+
 export interface NetSuiteConfig {
 	accountId: string;
 	consumerKey: string;
@@ -47,7 +49,7 @@ export class NetSuiteClient {
 		const raw = `${encodeURIComponent(this.config.consumerSecret)}&${encodeURIComponent(this.config.tokenSecret)}`;
 		this.signingKey = await crypto.subtle.importKey(
 			"raw",
-			new TextEncoder().encode(raw),
+			textEncoder.encode(raw),
 			{ name: "HMAC", hash: "SHA-256" },
 			false,
 			["sign"],
@@ -95,7 +97,7 @@ export class NetSuiteClient {
 		const sig = await crypto.subtle.sign(
 			"HMAC",
 			key,
-			new TextEncoder().encode(baseString),
+			textEncoder.encode(baseString),
 		);
 		const signature = btoa(String.fromCharCode(...new Uint8Array(sig)));
 

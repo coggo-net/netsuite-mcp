@@ -9,13 +9,14 @@ import { registerPurchaseOrderTools } from "./tools/purchase-orders.ts";
 import { registerSalesOrderTools } from "./tools/sales-orders.ts";
 import { registerSuiteQLTools } from "./tools/suiteql.ts";
 
-let sharedClient: NetSuiteClient | null = null;
-let sharedAPI: NetSuiteAPI | null = null;
+let shared: { client: NetSuiteClient; api: NetSuiteAPI } | null = null;
 
 function getShared() {
-	if (!sharedClient) sharedClient = createNetSuiteClient();
-	if (!sharedAPI) sharedAPI = createAPI(sharedClient);
-	return { client: sharedClient, api: sharedAPI };
+	if (!shared) {
+		const client = createNetSuiteClient();
+		shared = { client, api: createAPI(client) };
+	}
+	return shared;
 }
 
 export function createMcpServer() {

@@ -2,8 +2,6 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import { logger } from "./src/logger.ts";
 import { createMcpServer, createRestServer } from "./src/server.ts";
 
-// ─── MCP sessions ──────────────────────────────────────────────────
-
 interface SessionEntry {
 	transport: WebStandardStreamableHTTPServerTransport;
 	lastAccess: number;
@@ -11,7 +9,7 @@ interface SessionEntry {
 
 const sessions = new Map<string, SessionEntry>();
 
-const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const SESSION_TTL_MS = 30 * 60 * 1000;
 setInterval(() => {
 	const now = Date.now();
 	for (const [id, entry] of sessions) {
@@ -20,7 +18,7 @@ setInterval(() => {
 			logger.info({ session: id }, "session expired");
 		}
 	}
-}, 60 * 1000);
+}, 60 * 1000).unref();
 
 async function handleMcpRequest(req: Request): Promise<Response> {
 	const sessionId = req.headers.get("mcp-session-id");
@@ -58,11 +56,7 @@ async function handleMcpRequest(req: Request): Promise<Response> {
 	return transport.handleRequest(req);
 }
 
-// ─── REST API (OpenAPI) ────────────────────────────────────────────
-
 const { routes: restRoutes, openapi: openapiSpec } = createRestServer();
-
-// ─── Start server ──────────────────────────────────────────────────
 
 const port = Number(process.env.PORT) || 3000;
 
@@ -71,17 +65,13 @@ Bun.serve({
 	port,
 	idleTimeout: 0,
 	routes: {
-		// MCP endpoint
 		"/mcp": {
 			POST: (req) => handleMcpRequest(req),
 			GET: (req) => handleMcpRequest(req),
 			DELETE: (req) => handleMcpRequest(req),
 		},
-		// REST API
 		...restRoutes,
-		// OpenAPI spec (dynamically generated from route definitions)
 		"/api/openapi.json": () => Response.json(openapiSpec),
-		// Health
 		"/health": new Response("ok"),
 	},
 });
