@@ -144,7 +144,20 @@ export function buildBunRoutes(defs: RouteDef[]) {
 					def.method !== "get" &&
 					req.headers.get("content-type")?.includes("json")
 				) {
-					bodyData = await req.json();
+					const raw = await req.json();
+					if (def.body) {
+						const result = def.body.safeParse(raw);
+						if (!result.success) {
+							logger.warn({ ...logCtx, duration: Date.now() - start, err: result.error.message }, "validation error");
+							return Response.json(
+								{ error: "Validation error", issues: result.error.issues },
+								{ status: 400 },
+							);
+						}
+						bodyData = result.data;
+					} else {
+						bodyData = raw;
+					}
 				}
 
 				const result = await def.handler({

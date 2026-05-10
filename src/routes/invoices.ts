@@ -7,6 +7,7 @@ import {
 	sqlSearchBody,
 	type RouteDef,
 } from "./framework.ts";
+import { invoiceBody, invoiceBodyPartial } from "./schemas.ts";
 
 export function invoiceRoutes(api: InvoiceAPI): RouteDef[] {
 	return [
@@ -65,11 +66,10 @@ export function invoiceRoutes(api: InvoiceAPI): RouteDef[] {
 			path: "/api/invoices",
 			operationId: "invoice_create",
 			summary: "Create an invoice",
-			description:
-				"Create a new invoice. Key fields: entity (customer, required), subsidiary, tranDate, dueDate, memo, currency, department, location, salesRep, terms, account, createdFrom (source SO/PI), item ({items: [{item, quantity, rate}]}).",
+			description: "Create a new invoice in NetSuite.",
+			body: invoiceBody,
 			successStatus: 201,
-			handler: async ({ body }) =>
-				api.create(body as Record<string, unknown>),
+			handler: async ({ body }) => api.create(body),
 		}),
 		defineRoute({
 			method: "patch",
@@ -77,9 +77,9 @@ export function invoiceRoutes(api: InvoiceAPI): RouteDef[] {
 			operationId: "invoice_update",
 			summary: "Update an invoice",
 			description:
-				"Update an existing invoice by internal ID (PATCH). Updatable: memo, dueDate, exchangeRate, department, location, salesRep, terms, etc.",
-			handler: async ({ params, body }) =>
-				api.update(params.id, body as Record<string, unknown>),
+				"Update an existing invoice by internal ID (PATCH). Only provided fields are updated.",
+			body: invoiceBodyPartial,
+			handler: async ({ params, body }) => api.update(params.id, body),
 		}),
 		defineRoute({
 			method: "delete",

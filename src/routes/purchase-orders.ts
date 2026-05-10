@@ -6,6 +6,7 @@ import {
 	sqlSearchBody,
 	type RouteDef,
 } from "./framework.ts";
+import { purchaseOrderBody, purchaseOrderBodyPartial, itemReceiptBody } from "./schemas.ts";
 
 export function purchaseOrderRoutes(api: PurchaseOrderAPI): RouteDef[] {
 	return [
@@ -46,10 +47,10 @@ export function purchaseOrderRoutes(api: PurchaseOrderAPI): RouteDef[] {
 			operationId: "purchase_order_receive",
 			summary: "Receive items against a purchase order",
 			description:
-				"Create an item receipt to record physical receipt of goods. Key fields: createdFrom (PO ID, required), tranDate, memo, item ({items: [{item, quantity, location}]}).",
+				"Create an item receipt to record physical receipt of goods against a purchase order.",
+			body: itemReceiptBody,
 			successStatus: 201,
-			handler: async ({ body }) =>
-				api.receive(body as Record<string, unknown>),
+			handler: async ({ body }) => api.receive(body),
 		}),
 		defineRoute({
 			method: "get",
@@ -65,11 +66,10 @@ export function purchaseOrderRoutes(api: PurchaseOrderAPI): RouteDef[] {
 			path: "/api/purchase-orders",
 			operationId: "purchase_order_create",
 			summary: "Create a purchase order",
-			description:
-				"Create a new purchase order. Key fields: entity (vendor, required), subsidiary, tranDate, dueDate, memo, currency, location, department, employee, terms, item ({items: [{item, quantity, rate}]}).",
+			description: "Create a new purchase order in NetSuite.",
+			body: purchaseOrderBody,
 			successStatus: 201,
-			handler: async ({ body }) =>
-				api.create(body as Record<string, unknown>),
+			handler: async ({ body }) => api.create(body),
 		}),
 		defineRoute({
 			method: "patch",
@@ -77,9 +77,9 @@ export function purchaseOrderRoutes(api: PurchaseOrderAPI): RouteDef[] {
 			operationId: "purchase_order_update",
 			summary: "Update a purchase order",
 			description:
-				"Update an existing purchase order (PATCH). Updatable: memo, dueDate, shipDate, exchangeRate, location, department, employee, terms, etc.",
-			handler: async ({ params, body }) =>
-				api.update(params.id, body as Record<string, unknown>),
+				"Update an existing purchase order (PATCH). Only provided fields are updated.",
+			body: purchaseOrderBodyPartial,
+			handler: async ({ params, body }) => api.update(params.id, body),
 		}),
 		defineRoute({
 			method: "delete",

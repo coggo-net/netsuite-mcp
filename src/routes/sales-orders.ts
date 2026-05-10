@@ -8,6 +8,7 @@ import {
 	sqlSearchBody,
 	type RouteDef,
 } from "./framework.ts";
+import { salesOrderBody, salesOrderBodyPartial } from "./schemas.ts";
 
 export function salesOrderRoutes(
 	api: SalesOrderAPI,
@@ -59,11 +60,10 @@ export function salesOrderRoutes(
 			path: "/api/sales-orders",
 			operationId: "sales_order_create",
 			summary: "Create a sales order",
-			description:
-				"Create a new sales order or Pro-Forma Invoice. Key fields: entity (customer, required), subsidiary, tranDate, memo, currency, location, department, salesRep, customForm (PI form), terms, item ({items: [{item, quantity, rate}]}).",
+			description: "Create a new sales order or Pro-Forma Invoice in NetSuite.",
+			body: salesOrderBody,
 			successStatus: 201,
-			handler: async ({ body }) =>
-				api.create(body as Record<string, unknown>),
+			handler: async ({ body }) => api.create(body),
 		}),
 		defineRoute({
 			method: "patch",
@@ -71,9 +71,9 @@ export function salesOrderRoutes(
 			operationId: "sales_order_update",
 			summary: "Update a sales order",
 			description:
-				"Update an existing sales order / Pro-Forma Invoice (PATCH). Updatable: memo, shipDate, exchangeRate, location, department, salesRep, terms. To update line items, provide the full item array.",
-			handler: async ({ params, body }) =>
-				api.update(params.id, body as Record<string, unknown>),
+				"Update an existing sales order / Pro-Forma Invoice (PATCH). Only provided fields are updated.",
+			body: salesOrderBodyPartial,
+			handler: async ({ params, body }) => api.update(params.id, body),
 		}),
 		defineRoute({
 			method: "delete",
@@ -84,7 +84,6 @@ export function salesOrderRoutes(
 				"Delete a sales order / Pro-Forma Invoice by internal ID. This action is irreversible.",
 			handler: async ({ params }) => api.delete(params.id),
 		}),
-		// Pro-Forma Invoices
 		defineRoute({
 			method: "get",
 			path: "/api/proforma-invoices/recent",

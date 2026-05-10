@@ -6,6 +6,12 @@ import {
 	searchQuery,
 	type RouteDef,
 } from "./framework.ts";
+import {
+	inventoryItemBody,
+	inventoryItemBodyPartial,
+	inventoryAdjustmentBody,
+	inventoryTransferBody,
+} from "./schemas.ts";
 
 export function inventoryRoutes(api: InventoryAPI): RouteDef[] {
 	return [
@@ -58,11 +64,10 @@ export function inventoryRoutes(api: InventoryAPI): RouteDef[] {
 			path: "/api/inventory",
 			operationId: "inventory_create",
 			summary: "Create an inventory item",
-			description:
-				"Create a new inventory item. Key fields: itemId (SKU, required), displayName, subsidiary ({id}, required), description, purchaseDescription, salesDescription, cost, incomeAccount/cogsAccount/assetAccount ({id}, required), taxSchedule, weight, upcCode, isInactive, isOnline.",
+			description: "Create a new inventory item in NetSuite.",
+			body: inventoryItemBody,
 			successStatus: 201,
-			handler: async ({ body }) =>
-				api.create(body as Record<string, unknown>),
+			handler: async ({ body }) => api.create(body),
 		}),
 		defineRoute({
 			method: "patch",
@@ -70,9 +75,9 @@ export function inventoryRoutes(api: InventoryAPI): RouteDef[] {
 			operationId: "inventory_update",
 			summary: "Update an inventory item",
 			description:
-				"Update an existing inventory item by internal ID (PATCH). Updatable fields: itemId, displayName, description, purchaseDescription, salesDescription, cost, weight, upcCode, isInactive, isOnline, and reference fields.",
-			handler: async ({ params, body }) =>
-				api.update(params.id, body as Record<string, unknown>),
+				"Update an existing inventory item by internal ID (PATCH). Only provided fields are updated.",
+			body: inventoryItemBodyPartial,
+			handler: async ({ params, body }) => api.update(params.id, body),
 		}),
 		defineRoute({
 			method: "post",
@@ -80,10 +85,10 @@ export function inventoryRoutes(api: InventoryAPI): RouteDef[] {
 			operationId: "inventory_adjust",
 			summary: "Create inventory adjustment",
 			description:
-				"Create an inventory adjustment to correct stock quantities. Key fields: subsidiary, account, adjLocation, tranDate, memo, inventory ({items: [{item, adjustQtyBy, location}]}).",
+				"Create an inventory adjustment to correct stock quantities (e.g. after physical count).",
+			body: inventoryAdjustmentBody,
 			successStatus: 201,
-			handler: async ({ body }) =>
-				api.adjustInventory(body as Record<string, unknown>),
+			handler: async ({ body }) => api.adjustInventory(body),
 		}),
 		defineRoute({
 			method: "post",
@@ -91,10 +96,10 @@ export function inventoryRoutes(api: InventoryAPI): RouteDef[] {
 			operationId: "inventory_transfer",
 			summary: "Create inventory transfer",
 			description:
-				"Create an inventory transfer to move stock between locations. Key fields: subsidiary, location (source), transferLocation (destination), tranDate, memo, inventory ({items: [{item, adjustQtyBy}]}).",
+				"Create an inventory transfer to move stock between locations.",
+			body: inventoryTransferBody,
 			successStatus: 201,
-			handler: async ({ body }) =>
-				api.transferInventory(body as Record<string, unknown>),
+			handler: async ({ body }) => api.transferInventory(body),
 		}),
 	];
 }

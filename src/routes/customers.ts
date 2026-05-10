@@ -6,6 +6,7 @@ import {
 	sqlSearchBody,
 	type RouteDef,
 } from "./framework.ts";
+import { customerBody, customerBodyPartial } from "./schemas.ts";
 
 export function customerRoutes(api: CustomerAPI): RouteDef[] {
 	return [
@@ -54,11 +55,10 @@ export function customerRoutes(api: CustomerAPI): RouteDef[] {
 			path: "/api/customers",
 			operationId: "customer_create",
 			summary: "Create a customer",
-			description:
-				"Create a new customer record in NetSuite. Key fields: companyName (required for company), isPerson, firstName/lastName (required if isPerson), subsidiary ({id}), email, phone, currency, terms, category, salesRep, creditLimit, taxable, isInactive, addressBook.",
+			description: "Create a new customer record in NetSuite.",
+			body: customerBody,
 			successStatus: 201,
-			handler: async ({ body }) =>
-				api.create(body as Record<string, unknown>),
+			handler: async ({ body }) => api.create(body),
 		}),
 		defineRoute({
 			method: "patch",
@@ -66,9 +66,9 @@ export function customerRoutes(api: CustomerAPI): RouteDef[] {
 			operationId: "customer_update",
 			summary: "Update a customer",
 			description:
-				"Update an existing customer record by internal ID (PATCH). Updatable fields: companyName, firstName, lastName, email, phone, creditLimit, taxable, isInactive, terms, salesRep, category, currency, subsidiary. Reference fields use {id} format.",
-			handler: async ({ params, body }) =>
-				api.update(params.id, body as Record<string, unknown>),
+				"Update an existing customer record by internal ID (PATCH). Only provided fields are updated.",
+			body: customerBodyPartial,
+			handler: async ({ params, body }) => api.update(params.id, body),
 		}),
 		defineRoute({
 			method: "delete",
