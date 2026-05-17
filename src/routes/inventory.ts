@@ -3,13 +3,13 @@ import type { InventoryAPI } from "../api/inventory.ts";
 import {
 	defineRoute,
 	paginationQuery,
-	searchQuery,
 	type RouteDef,
+	searchQuery,
 } from "./framework.ts";
 import {
+	inventoryAdjustmentBody,
 	inventoryItemBody,
 	inventoryItemBodyPartial,
-	inventoryAdjustmentBody,
 	inventoryTransferBody,
 } from "./schemas.ts";
 

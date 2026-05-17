@@ -4,9 +4,9 @@ import {
 	defineRoute,
 	limitQuery,
 	paginationQuery,
+	type RouteDef,
 	searchQuery,
 	sqlSearchBody,
-	type RouteDef,
 } from "./framework.ts";
 import { salesOrderBody, salesOrderBodyPartial } from "./schemas.ts";
 

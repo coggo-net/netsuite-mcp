@@ -22,7 +22,10 @@ setInterval(() => {
 
 async function handleMcpRequest(req: Request): Promise<Response> {
 	const sessionId = req.headers.get("mcp-session-id");
-	logger.info({ method: req.method, session: sessionId ?? "new" }, "mcp request");
+	logger.info(
+		{ method: req.method, session: sessionId ?? "new" },
+		"mcp request",
+	);
 
 	if (sessionId) {
 		const entry = sessions.get(sessionId);
@@ -76,4 +79,7 @@ Bun.serve({
 	},
 });
 
-logger.info({ port, hostname: "0.0.0.0" }, "NetSuite MCP + OpenAPI server started");
+logger.info(
+	{ port, hostname: "0.0.0.0" },
+	"NetSuite MCP + OpenAPI server started",
+);

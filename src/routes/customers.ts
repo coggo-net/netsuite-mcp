@@ -2,9 +2,9 @@ import type { CustomerAPI } from "../api/customers.ts";
 import {
 	defineRoute,
 	paginationQuery,
+	type RouteDef,
 	searchQuery,
 	sqlSearchBody,
-	type RouteDef,
 } from "./framework.ts";
 import { customerBody, customerBodyPartial } from "./schemas.ts";
 

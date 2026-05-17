@@ -71,7 +71,10 @@ export class NetSuiteClient {
 		};
 
 		// Include query params in signature per OAuth 1.0 spec
-		const [urlBase, queryString] = url.split("?") as [string, string | undefined];
+		const [urlBase, queryString] = url.split("?") as [
+			string,
+			string | undefined,
+		];
 		if (queryString) {
 			for (const part of queryString.split("&")) {
 				const [k, v] = part.split("=");
@@ -143,7 +146,10 @@ export class NetSuiteClient {
 			signal,
 		});
 
-		logger.info({ method, path, status: res.status, duration: Date.now() - start }, "netsuite response");
+		logger.info(
+			{ method, path, status: res.status, duration: Date.now() - start },
+			"netsuite response",
+		);
 
 		if (!res.ok) {
 			const text = await res.text();

@@ -2,11 +2,15 @@ import type { PurchaseOrderAPI } from "../api/purchase-orders.ts";
 import {
 	defineRoute,
 	paginationQuery,
+	type RouteDef,
 	searchQuery,
 	sqlSearchBody,
-	type RouteDef,
 } from "./framework.ts";
-import { purchaseOrderBody, purchaseOrderBodyPartial, itemReceiptBody } from "./schemas.ts";
+import {
+	itemReceiptBody,
+	purchaseOrderBody,
+	purchaseOrderBodyPartial,
+} from "./schemas.ts";
 
 export function purchaseOrderRoutes(api: PurchaseOrderAPI): RouteDef[] {
 	return [

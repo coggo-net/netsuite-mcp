@@ -120,16 +120,19 @@ export function buildBunRoutes(defs: RouteDef[]) {
 			}
 		}
 
-		const logCtx = { method: def.method, path: def.path, operationId: def.operationId };
+		const logCtx = {
+			method: def.method,
+			path: def.path,
+			operationId: def.operationId,
+		};
 
 		routes[path]![def.method.toUpperCase()] = async (req: Request) => {
 			const start = Date.now();
 			logger.info(logCtx, "api request");
 			try {
 				const url = new URL(req.url);
-				const reqParams = (
-					req as Request & { params: Record<string, string> }
-				).params;
+				const reqParams = (req as Request & { params: Record<string, string> })
+					.params;
 
 				const query: Record<string, unknown> = {};
 				for (const key of queryKeys) {
@@ -148,7 +151,14 @@ export function buildBunRoutes(defs: RouteDef[]) {
 					if (def.body) {
 						const result = def.body.safeParse(raw);
 						if (!result.success) {
-							logger.warn({ ...logCtx, duration: Date.now() - start, err: result.error.message }, "validation error");
+							logger.warn(
+								{
+									...logCtx,
+									duration: Date.now() - start,
+									err: result.error.message,
+								},
+								"validation error",
+							);
 							return Response.json(
 								{ error: "Validation error", issues: result.error.issues },
 								{ status: 400 },
@@ -166,11 +176,17 @@ export function buildBunRoutes(defs: RouteDef[]) {
 					params: reqParams,
 				});
 				const status = def.successStatus ?? 200;
-				logger.info({ ...logCtx, status, duration: Date.now() - start }, "api response");
+				logger.info(
+					{ ...logCtx, status, duration: Date.now() - start },
+					"api response",
+				);
 				return Response.json(result, { status });
 			} catch (e) {
 				const message = e instanceof Error ? e.message : String(e);
-				logger.error({ ...logCtx, duration: Date.now() - start, err: message }, "api error");
+				logger.error(
+					{ ...logCtx, duration: Date.now() - start, err: message },
+					"api error",
+				);
 				return Response.json({ error: message }, { status: 500 });
 			}
 		};
@@ -260,7 +276,8 @@ export function buildOpenAPISpec(defs: RouteDef[]) {
 		openapi: "3.1.0",
 		info: {
 			title: "NetSuite API",
-			description: "REST API for managing NetSuite records — customers, inventory, sales orders, invoices, purchase orders, and raw SuiteQL queries.",
+			description:
+				"REST API for managing NetSuite records — customers, inventory, sales orders, invoices, purchase orders, and raw SuiteQL queries.",
 			version: "1.0.0",
 		},
 		paths,
