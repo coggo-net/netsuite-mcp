@@ -71,7 +71,7 @@ export function salesOrderRoutes(
 			operationId: "sales_order_update",
 			summary: "Update a sales order",
 			description:
-				"Update an existing sales order / Pro-Forma Invoice (PATCH). Only provided fields are updated.",
+				"Update an existing sales order / Pro-Forma Invoice (PATCH). Only provided header fields are updated. If the item sublist is included, it FULLY REPLACES the existing line items — provide the complete set of lines you want to keep. Omit item to leave existing lines untouched.",
 			body: salesOrderBodyPartial,
 			handler: async ({ params, body }) => api.update(params.id, body),
 		}),

@@ -95,7 +95,7 @@ export function vendorBillRoutes(api: VendorBillAPI): RouteDef[] {
 			operationId: "vendor_bill_update",
 			summary: "Update a vendor bill",
 			description:
-				"Update an existing vendor bill by internal ID (PATCH). Only provided fields are updated.",
+				"Update an existing vendor bill by internal ID (PATCH). Only provided header fields are updated. If a sublist (item, expense) is included, it FULLY REPLACES the existing sublist — provide the complete set of lines you want to keep. Omit the sublist to leave existing lines untouched.",
 			body: vendorBillBodyPartial,
 			handler: async ({ params, body }) => api.update(params.id, body),
 		}),

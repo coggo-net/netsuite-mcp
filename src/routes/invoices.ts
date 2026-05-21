@@ -77,7 +77,7 @@ export function invoiceRoutes(api: InvoiceAPI): RouteDef[] {
 			operationId: "invoice_update",
 			summary: "Update an invoice",
 			description:
-				"Update an existing invoice by internal ID (PATCH). Only provided fields are updated.",
+				"Update an existing invoice by internal ID (PATCH). Only provided header fields are updated. If the item sublist is included, it FULLY REPLACES the existing line items — provide the complete set of lines you want to keep. Omit item to leave existing lines untouched.",
 			body: invoiceBodyPartial,
 			handler: async ({ params, body }) => api.update(params.id, body),
 		}),

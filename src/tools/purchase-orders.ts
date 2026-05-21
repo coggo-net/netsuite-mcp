@@ -129,12 +129,16 @@ Example:
 
 	server.tool(
 		"purchase_order_update",
-		`Update an existing purchase order by internal ID. Only provided fields are updated (PATCH).
+		`Update an existing purchase order by internal ID. Only provided header fields are updated (PATCH).
 
 Updatable fields: memo, dueDate, shipDate, exchangeRate, location, department, employee,
-terms, and all other header fields. To update line items, provide the full item array.
+terms, and all other header fields.
 
-Example: {"memo": "Updated PO", "dueDate": "2026-06-15"}`,
+Sublist replace semantics: if you include the item sublist, it FULLY REPLACES the
+existing line items — you must provide the complete set of lines you want to keep, not
+just the changed ones. Omit item entirely to leave existing lines untouched.
+
+Example — header-only change: {"memo": "Updated PO", "dueDate": "2026-06-15"}`,
 		{
 			id: z.string().describe("Purchase order internal ID"),
 			data: z

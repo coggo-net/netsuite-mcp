@@ -81,7 +81,7 @@ export function purchaseOrderRoutes(api: PurchaseOrderAPI): RouteDef[] {
 			operationId: "purchase_order_update",
 			summary: "Update a purchase order",
 			description:
-				"Update an existing purchase order (PATCH). Only provided fields are updated.",
+				"Update an existing purchase order (PATCH). Only provided header fields are updated. If the item sublist is included, it FULLY REPLACES the existing line items — provide the complete set of lines you want to keep. Omit item to leave existing lines untouched.",
 			body: purchaseOrderBodyPartial,
 			handler: async ({ params, body }) => api.update(params.id, body),
 		}),

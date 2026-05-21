@@ -195,12 +195,17 @@ Example:
 
 	server.tool(
 		"vendor_bill_update",
-		`Update an existing vendor bill by internal ID. Only provided fields are updated (PATCH).
+		`Update an existing vendor bill by internal ID. Only provided header fields are updated (PATCH).
 
 Updatable fields: memo, dueDate, exchangeRate, department, location, terms, account,
-tranId, and all other header fields. To update line items, provide the full item array.
+tranId, and all other header fields.
 
-Example: {"memo": "Updated", "dueDate": "2026-07-01"}`,
+Sublist replace semantics: if you include a sublist (item, expense), it FULLY REPLACES
+the existing sublist — you must provide the complete set of lines you want to keep, not
+just the changed ones. Omit the sublist entirely to leave existing lines untouched.
+
+Example — header-only change: {"memo": "Updated", "dueDate": "2026-07-01"}
+Example — replace all lines: {"item": {"items": [{"item": {"id": "225"}, "quantity": 6, "rate": 2610.09}]}}`,
 		{
 			id: z.string().describe("Vendor bill internal ID"),
 			data: z

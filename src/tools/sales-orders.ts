@@ -156,16 +156,20 @@ Example — Pro-Forma Invoice with one lot-tracked line:
 
 	server.tool(
 		"sales_order_update",
-		`Update an existing sales order / Pro-Forma Invoice. Only provided fields are updated (PATCH).
+		`Update an existing sales order / Pro-Forma Invoice. Only provided header fields are updated (PATCH).
 
 Updatable fields: memo, shipDate, exchangeRate, location, department, salesRep, terms, and
-all other header fields. To update line items, provide the full item array.
+all other header fields.
+
+Sublist replace semantics: if you include the item sublist, it FULLY REPLACES the
+existing line items — you must provide the complete set of lines you want to keep, not
+just the changed ones. Omit item entirely to leave existing lines untouched.
 
 When the item array is provided, lot-tracked lines without inventoryDetail are
 auto-assigned FIFO. Pass inventoryDetail explicitly to pin specific lots. See
 sales_order_create for the full lot-assignment example.
 
-Example: {"memo": "Updated memo", "shipDate": "2026-06-01"}`,
+Example — header-only change: {"memo": "Updated memo", "shipDate": "2026-06-01"}`,
 		{
 			id: z.string().describe("Sales order internal ID"),
 			data: salesOrderBodyPartial

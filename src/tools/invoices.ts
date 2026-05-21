@@ -151,12 +151,17 @@ Example — create standalone invoice:
 
 	server.tool(
 		"invoice_update",
-		`Update an existing invoice by internal ID. Only provided fields are updated (PATCH).
+		`Update an existing invoice by internal ID. Only provided header fields are updated (PATCH).
 
 Updatable fields: memo, dueDate, exchangeRate, department, location, salesRep, terms,
-and all other header fields. To update line items, provide the full item array.
+and all other header fields.
 
-Example: {"memo": "Updated", "dueDate": "2026-07-01"}`,
+Sublist replace semantics: if you include the item sublist, it FULLY REPLACES the
+existing line items — you must provide the complete set of lines you want to keep, not
+just the changed ones. Omit item entirely to leave existing lines untouched.
+
+Example — header-only change: {"memo": "Updated", "dueDate": "2026-07-01"}
+Example — replace all lines: {"item": {"items": [{"item": {"id": "225"}, "quantity": 50, "rate": 12.50}]}}`,
 		{
 			id: z.string().describe("Invoice internal ID"),
 			data: z

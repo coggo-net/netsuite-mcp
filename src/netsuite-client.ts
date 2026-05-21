@@ -32,6 +32,21 @@ export interface ListResult<T = Record<string, unknown>> {
 	count: number;
 }
 
+function detectSublists(data: Record<string, unknown>): string[] {
+	const sublists: string[] = [];
+	for (const [key, value] of Object.entries(data)) {
+		if (
+			value !== null &&
+			typeof value === "object" &&
+			!Array.isArray(value) &&
+			Array.isArray((value as Record<string, unknown>).items)
+		) {
+			sublists.push(key);
+		}
+	}
+	return sublists;
+}
+
 export class NetSuiteClient {
 	private config: NetSuiteConfig;
 	private baseUrl: string;
@@ -230,7 +245,13 @@ export class NetSuiteClient {
 		id: string,
 		data: Record<string, unknown>,
 	): Promise<Record<string, unknown>> {
-		return (await this.request("PATCH", `/record/v1/${recordType}/${id}`, {
+		// NetSuite REST defaults to merging sublists on PATCH — sending an `item`
+		// array would APPEND to the existing lines instead of replacing them.
+		// Auto-detect sublists in the body (the `{ items: [...] }` envelope) and
+		// pass them via ?replace=... so the provided array is the new sublist.
+		const sublists = detectSublists(data);
+		const qs = sublists.length ? `?replace=${sublists.join(",")}` : "";
+		return (await this.request("PATCH", `/record/v1/${recordType}/${id}${qs}`, {
 			body: data,
 		})) as Record<string, unknown>;
 	}
