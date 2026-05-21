@@ -113,6 +113,14 @@ Key fields:
   - amount (number): Line total.
   - description (string): Line description.
   - taxCode (object): {id: "..."} — tax code.
+  - inventoryDetail (object): For lot/serial-tracked items only. See "Lot receipt" below.
+
+Lot receipt (lot/serial-tracked items):
+Vendor bills are INBOUND, so use receiptInventoryNumber per assignment. Pass {refName: "..."}
+to auto-create a brand-new lot (NetSuite creates the inventoryNumber master record on the
+fly), or {id: "..."} to bill against an existing lot. inventoryDetail.quantity MUST equal
+the line quantity, and the sum of inventoryAssignment.items[].quantity MUST also equal it —
+otherwise NetSuite silently drops the assignment.
 
 Example — bill linked to a PO (line items auto-populated from PO):
 {
@@ -134,6 +142,28 @@ Example — standalone bill:
   "currency": {"id": "1"},
   "item": {"items": [
     {"item": {"id": "225"}, "quantity": 100, "rate": 10.00}
+  ]}
+}
+
+Example — standalone bill with a lot-tracked line (creates new lot LOT-2026-007):
+{
+  "entity": {"id": "265"},
+  "subsidiary": {"id": "1"},
+  "tranId": "SUP-INV-2026-0044",
+  "tranDate": "2026-05-15",
+  "currency": {"id": "1"},
+  "item": {"items": [
+    {
+      "item": {"id": "1886"},
+      "quantity": 50,
+      "rate": 250,
+      "inventoryDetail": {
+        "quantity": 50,
+        "inventoryAssignment": {"items": [
+          {"quantity": 50, "receiptInventoryNumber": {"refName": "LOT-2026-007"}, "expirationDate": "2028-05-01"}
+        ]}
+      }
+    }
   ]}
 }`,
 		{

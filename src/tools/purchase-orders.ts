@@ -179,14 +179,34 @@ Key fields:
   - item (object): {id: "..."} — item being received.
   - quantity (number): Quantity received.
   - location (object): {id: "..."} — receiving location.
+  - inventoryDetail (object): For lot/serial-tracked items only. See "Lot receipt" below.
 
-Example:
+Lot receipt (lot/serial-tracked items):
+This is INBOUND, so use receiptInventoryNumber per assignment. Pass {refName: "..."} to
+auto-create a brand-new lot (NetSuite creates the inventoryNumber master record on the
+fly), or {id: "..."} to receive against an existing lot. inventoryDetail.quantity MUST
+equal the line quantity, and the sum of inventoryAssignment.items[].quantity MUST also
+equal it — otherwise NetSuite silently drops the assignment.
+
+Example — partial receipt with new lots created on the fly:
 {
   "createdFrom": {"id": "4124"},
   "tranDate": "2026-05-08",
   "memo": "Partial receipt",
   "item": {"items": [
-    {"item": {"id": "225"}, "quantity": 200, "location": {"id": "1"}}
+    {"item": {"id": "225"}, "quantity": 200, "location": {"id": "1"}},
+    {
+      "item": {"id": "1886"},
+      "quantity": 30,
+      "location": {"id": "1"},
+      "inventoryDetail": {
+        "quantity": 30,
+        "inventoryAssignment": {"items": [
+          {"quantity": 20, "receiptInventoryNumber": {"refName": "LOT-2026-001"}, "expirationDate": "2028-05-01"},
+          {"quantity": 10, "receiptInventoryNumber": {"refName": "LOT-2026-002"}, "expirationDate": "2028-05-01"}
+        ]}
+      }
+    }
   ]}
 }`,
 		{

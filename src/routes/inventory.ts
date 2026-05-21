@@ -56,7 +56,7 @@ export function inventoryRoutes(api: InventoryAPI): RouteDef[] {
 			operationId: "inventory_search_lot_numbers",
 			summary: "Search available lot/serial numbers for an item",
 			description:
-				"Search available lot/serial numbers for a lot-tracked item. Returns inventoryNumber records with id, inventoryNumber (text), expirationDate (may be empty), location, quantityOnHand, and quantityAvailable. Filtered to lots with on-hand > 0, ordered by lot id ascending (oldest-first ≈ FIFO). Use the returned id as issueInventoryNumber.id when assigning lots on a sales order line's inventoryDetail.",
+				"Search available lot/serial numbers for a lot-tracked item. Returns inventoryNumber records with id, inventoryNumber (text), expirationDate (may be empty), location, quantityOnHand, and quantityAvailable. Filtered to lots with on-hand > 0, ordered by lot id ascending (oldest-first ≈ FIFO). For outbound transactions (Sales Order / PI / Invoice), use the returned id as issueInventoryNumber.id. For inbound transactions (Vendor Bill / PO Receive / Item Receipt) against an EXISTING lot, use receiptInventoryNumber: {id}; for a BRAND-NEW lot, use receiptInventoryNumber: {refName: 'LOT-NAME'} instead (no lookup needed — NetSuite auto-creates the lot record).",
 			body: z.object({
 				itemId: z.string().describe("Inventory item internal ID"),
 				locationId: z

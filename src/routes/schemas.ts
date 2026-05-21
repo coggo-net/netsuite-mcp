@@ -4,11 +4,35 @@ export const nsRef = z
 	.object({ id: z.string() })
 	.describe("Reference by internal ID");
 
+const lotReceiptRef = z
+	.object({
+		id: z
+			.string()
+			.optional()
+			.describe("Existing inventoryNumber record id (for re-receiving a lot)"),
+		refName: z
+			.string()
+			.optional()
+			.describe(
+				"New lot/serial number string — NetSuite auto-creates the inventoryNumber master record",
+			),
+	})
+	.describe(
+		"Lot reference for inbound transactions. Provide id for an existing lot, or refName to auto-create a new one.",
+	);
+
 const inventoryAssignmentItem = z.object({
 	quantity: z.number().describe("Quantity assigned to this lot"),
-	issueInventoryNumber: nsRef.describe(
-		"Lot record id (use the id returned by inventory_search_lot_numbers). Required on Sales Orders / PIs.",
-	),
+	issueInventoryNumber: nsRef
+		.optional()
+		.describe(
+			"OUTBOUND only (Sales Order / PI / Invoice / outbound Inventory Adjustment). Existing lot record id — use the id returned by inventory_search_lot_numbers.",
+		),
+	receiptInventoryNumber: lotReceiptRef
+		.optional()
+		.describe(
+			"INBOUND only (Purchase Order receipt / Vendor Bill / Item Receipt / inbound Inventory Adjustment). Use {id} to reference an existing lot, or {refName} to create a new lot.",
+		),
 	expirationDate: z.string().optional().describe("Lot expiration (YYYY-MM-DD)"),
 	binNumber: nsRef.optional().describe("Bin reference"),
 	inventoryStatus: nsRef.optional().describe("Inventory status reference"),
@@ -28,7 +52,7 @@ const inventoryDetail = z
 			),
 	})
 	.describe(
-		"Lot/serial assignment subrecord. Required at PI time for lot-tracked items in this account.",
+		"Lot/serial assignment subrecord for lot-tracked items. Required at PI time for outbound (issueInventoryNumber); required at receipt time for inbound (receiptInventoryNumber).",
 	);
 
 const transactionLineItem = z.object({
@@ -67,6 +91,11 @@ const receiptLineItem = z.object({
 	item: nsRef.describe("Item being received"),
 	quantity: z.number().describe("Quantity received"),
 	location: nsRef.optional().describe("Receiving location"),
+	inventoryDetail: inventoryDetail
+		.optional()
+		.describe(
+			"Lot/serial assignment for lot-tracked items. Use receiptInventoryNumber: provide {refName} to auto-create a new lot, or {id} to receive against an existing lot.",
+		),
 });
 
 export const customerBody = z

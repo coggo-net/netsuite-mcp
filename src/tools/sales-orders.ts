@@ -103,13 +103,14 @@ Key fields:
   - inventoryDetail (object): For lot/serial-tracked items only. See "Lot assignment" below.
 
 Lot assignment (lot/serial-tracked items):
-The schema exposes inventoryDetail as a typed field on each line. Pass it explicitly when
-you've used inventory_search_lot_numbers to pick specific lots. If you OMIT inventoryDetail
-for a lot-tracked item, the API layer will auto-assign FIFO from available lots at the
-line's location — so a missing inventoryDetail is no longer a silent bug, but you should
-still pass it explicitly for traceability when the user has expressed a lot preference.
-Use issueInventoryNumber.id (the id returned by inventory_search_lot_numbers), not the
-lot text name.
+Sales orders / PIs are OUTBOUND, so each lot assignment uses issueInventoryNumber.id
+(the id returned by inventory_search_lot_numbers — NOT the lot text name) to draw down
+from existing lots. The schema exposes inventoryDetail as a typed field on each line.
+Pass it explicitly when you've picked specific lots. If you OMIT inventoryDetail for a
+lot-tracked item, the API layer will auto-assign FIFO from available lots at the line's
+location — so a missing inventoryDetail is no longer a silent bug, but pass it explicitly
+for traceability when the user has expressed a lot preference. (For inbound transactions
+like vendor bills or item receipts, use receiptInventoryNumber instead — see those tools.)
 
 Example — Pro-Forma Invoice with one lot-tracked line:
 {
