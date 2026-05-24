@@ -18,7 +18,7 @@ const lotReceiptRef = z
 			),
 	})
 	.describe(
-		"Lot reference for inbound transactions. Provide id for an existing lot, or refName to auto-create a new one.",
+		"Lot reference for inbound transactions. Provide id for an existing lot, or refName to auto-create a new one. Fallback: if refName auto-create is rejected by NetSuite (INVALID_VALUE / USER_ERROR — known to happen on standalone Vendor Bills under some account configs), pre-create the inventoryNumber via inventory_lot_create and pass {id: '<returned-id>'} instead.",
 	);
 
 const inventoryAssignmentItem = z.object({

@@ -84,7 +84,8 @@ export function vendorBillRoutes(api: VendorBillAPI): RouteDef[] {
 			path: "/api/vendor-bills",
 			operationId: "vendor_bill_create",
 			summary: "Create a vendor bill",
-			description: "Create a new vendor bill (supplier invoice) in NetSuite.",
+			description:
+				"Create a new vendor bill (supplier invoice) in NetSuite. Lot/serial-tracked lines: vendor bills are INBOUND, so use receiptInventoryNumber per inventoryAssignment item. Pass {refName: '...'} to auto-create a new lot, or {id: '...'} to bill against an existing one. inventoryDetail.quantity MUST equal the line quantity and the sum of inventoryAssignment.items[].quantity MUST also equal it. Fallback: some NetSuite account configurations reject implicit lot creation on STANDALONE vendor bills (INVALID_VALUE / USER_ERROR), even though the same payload works on item receipts. When that happens, call POST /api/inventory/lots (inventory_lot_create) first to pre-create the inventoryNumber record, then resubmit the bill using receiptInventoryNumber: {id: '<returned-id>'}.",
 			body: vendorBillBody,
 			successStatus: 201,
 			handler: async ({ body }) => api.create(body),
