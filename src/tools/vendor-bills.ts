@@ -122,6 +122,12 @@ fly), or {id: "..."} to bill against an existing lot. inventoryDetail.quantity M
 the line quantity, and the sum of inventoryAssignment.items[].quantity MUST also equal it —
 otherwise NetSuite silently drops the assignment.
 
+Fallback when {refName} fails: some NetSuite account configurations reject implicit lot
+creation on STANDALONE vendor bills (returns INVALID_VALUE / USER_ERROR), even though the
+same payload works on item receipts. If that happens, call inventory_lot_create first to
+pre-create the inventoryNumber master record, then resubmit the bill with
+receiptInventoryNumber: {id: "<returned-id>"}.
+
 Example — bill linked to a PO (line items auto-populated from PO):
 {
   "entity": {"id": "265"},

@@ -86,6 +86,40 @@ export function registerInventoryTools(server: McpServer, api: InventoryAPI) {
 	);
 
 	server.tool(
+		"inventory_lot_create",
+		`Pre-create an inventoryNumber (lot/serial) master record so it can be referenced by id on inbound transactions.
+
+Use this when the in-line {refName: "..."} auto-create on a transaction returns INVALID_VALUE / USER_ERROR — some NetSuite account configurations reject implicit lot creation on standalone Vendor Bills (and a few other inbound docs). After this call, pass the returned id as receiptInventoryNumber.id on the line's inventoryDetail.
+
+Fields:
+- inventoryNumber (string): Lot/serial number string (e.g. "SBLF2649"). Required.
+- item (object): {id: "..."} — the lot-tracked inventory item. Required.
+- expirationDate (string): Lot expiration, YYYY-MM-DD. Required if the item has shelf-life tracking enabled.
+- memo (string): Optional notes on the lot.
+
+Example:
+{
+  "inventoryNumber": "SBLF2649",
+  "item": {"id": "1914"},
+  "expirationDate": "2028-05-01"
+}`,
+		{
+			data: z
+				.record(z.string(), z.unknown())
+				.describe(
+					"inventoryNumber fields — see tool description for required fields and example",
+				),
+		},
+		async ({ data }) => {
+			try {
+				return ok(await api.createLot(data));
+			} catch (e) {
+				return err(e);
+			}
+		},
+	);
+
+	server.tool(
 		"inventory_create",
 		`Create a new inventory item in NetSuite.
 

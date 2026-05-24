@@ -11,6 +11,7 @@ import {
 	inventoryItemBody,
 	inventoryItemBodyPartial,
 	inventoryTransferBody,
+	nsRef,
 } from "./schemas.ts";
 
 export function inventoryRoutes(api: InventoryAPI): RouteDef[] {
@@ -66,6 +67,27 @@ export function inventoryRoutes(api: InventoryAPI): RouteDef[] {
 			}),
 			handler: async ({ body }) =>
 				api.searchLotNumbers(body.itemId, body.locationId),
+		}),
+		defineRoute({
+			method: "post",
+			path: "/api/inventory/lots",
+			operationId: "inventory_lot_create",
+			summary: "Pre-create a lot/serial (inventoryNumber) record",
+			description:
+				"Pre-create an inventoryNumber (lot/serial) master record so it can be referenced by id on inbound transactions. Use this as a fallback when an inline {refName: '...'} auto-create returns INVALID_VALUE / USER_ERROR — some NetSuite account configurations reject implicit lot creation on standalone Vendor Bills. After this call, pass the returned id as receiptInventoryNumber.id on the line's inventoryDetail.",
+			body: z.object({
+				inventoryNumber: z
+					.string()
+					.describe("Lot/serial number string (e.g. 'SBLF2649')"),
+				item: nsRef.describe("Lot-tracked inventory item"),
+				expirationDate: z
+					.string()
+					.optional()
+					.describe("Lot expiration (YYYY-MM-DD)"),
+				memo: z.string().optional().describe("Optional notes on the lot"),
+			}),
+			successStatus: 201,
+			handler: async ({ body }) => api.createLot(body),
 		}),
 		defineRoute({
 			method: "get",

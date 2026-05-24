@@ -39,6 +39,10 @@ export function registerInventoryAPI(client: NetSuiteClient) {
 			);
 		},
 
+		createLot(data: Record<string, unknown>) {
+			return client.createRecord("inventoryNumber", data);
+		},
+
 		searchLotNumbers(itemId: string, locationId?: string) {
 			const locationFilter = locationId
 				? `AND bal.location = '${locationId}'`
