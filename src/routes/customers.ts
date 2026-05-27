@@ -25,7 +25,7 @@ export function customerRoutes(api: CustomerAPI): RouteDef[] {
 			operationId: "customer_search",
 			summary: "Search customers by company name",
 			description:
-				"Search customers by company name keyword. Uses NetSuite's CONTAIN operator to match partial company names.",
+				"Search customers by company name keyword. Uses NetSuite's CONTAIN operator on companyName for partial matches. For person-type customers (isPerson=true), companyName is typically empty — search may miss those; fall back to the list endpoint with pagination if needed.",
 			query: searchQuery,
 			handler: async ({ query }) =>
 				api.search(query.keyword, { limit: query.limit }),

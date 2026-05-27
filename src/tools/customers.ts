@@ -44,7 +44,7 @@ export function registerCustomerTools(server: McpServer, api: CustomerAPI) {
 
 	server.tool(
 		"customer_search",
-		"Search customers by company name keyword. Uses NetSuite's CONTAIN operator to match partial company names.",
+		"Search customers by company name keyword. Uses NetSuite's CONTAIN operator on companyName for partial matches. For person-type customers (isPerson=true), companyName is typically empty — search may miss those; fall back to customer_list with pagination if needed.",
 		{
 			keyword: z.string().describe("Company name keyword to search"),
 			limit: z.number().optional().describe("Max records to return"),

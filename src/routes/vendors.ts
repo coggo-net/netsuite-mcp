@@ -25,7 +25,7 @@ export function vendorRoutes(api: VendorAPI): RouteDef[] {
 			operationId: "vendor_search",
 			summary: "Search vendors by company name",
 			description:
-				"Search vendors by company name keyword. Uses NetSuite's CONTAIN operator on companyName for partial matches.",
+				"Search vendors by company name keyword. Uses NetSuite's CONTAIN operator on companyName for partial matches. For person-type vendors (isPerson=true), companyName is typically empty — search may miss those; fall back to the list endpoint with pagination if needed.",
 			query: searchQuery,
 			handler: async ({ query }) =>
 				api.search(query.keyword, { limit: query.limit }),

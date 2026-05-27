@@ -2,6 +2,14 @@ import type { ListParams, NetSuiteClient } from "../netsuite-client.ts";
 
 const RECORD_TYPE = "inventoryItem";
 
+function assertNumericId(value: string, field: string): void {
+	if (!/^\d+$/.test(value)) {
+		throw new Error(
+			`${field} must be a numeric NetSuite internal ID, got: ${value}`,
+		);
+	}
+}
+
 export function registerInventoryAPI(client: NetSuiteClient) {
 	return {
 		list(params: ListParams = {}) {
@@ -32,6 +40,7 @@ export function registerInventoryAPI(client: NetSuiteClient) {
 		},
 
 		queryStock(itemIds: string[]) {
+			for (const id of itemIds) assertNumericId(id, "itemId");
 			const ids = itemIds.map((id) => `'${id}'`).join(",");
 			return client.suiteQL(
 				`SELECT item.id, item.itemId, item.displayName, SUM(bal.quantityOnHand) AS quantityOnHand, SUM(bal.quantityAvailable) AS quantityAvailable, SUM(bal.quantityOnOrder) AS quantityOnOrder FROM inventoryBalance bal JOIN item ON bal.item = item.id WHERE item.id IN (${ids}) GROUP BY item.id, item.itemId, item.displayName`,
@@ -44,6 +53,8 @@ export function registerInventoryAPI(client: NetSuiteClient) {
 		},
 
 		searchLotNumbers(itemId: string, locationId?: string) {
+			assertNumericId(itemId, "itemId");
+			if (locationId) assertNumericId(locationId, "locationId");
 			const locationFilter = locationId
 				? `AND bal.location = '${locationId}'`
 				: "";
