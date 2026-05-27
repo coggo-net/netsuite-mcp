@@ -320,3 +320,245 @@ export const itemReceiptBody = z
 			.describe("Receipt lines"),
 	})
 	.describe("Item receipt");
+
+export const vendorBody = z
+	.object({
+		companyName: z
+			.string()
+			.optional()
+			.describe("Legal company name (required for company vendors)"),
+		isPerson: z
+			.boolean()
+			.optional()
+			.describe("true for individual, false for company"),
+		firstName: z.string().optional().describe("First name (if isPerson)"),
+		lastName: z.string().optional().describe("Last name (if isPerson)"),
+		middleName: z.string().optional().describe("Middle name"),
+		salutation: z.string().optional().describe("Mr./Ms./..."),
+		title: z.string().optional().describe("Job title"),
+		entityId: z
+			.string()
+			.optional()
+			.describe("Supplier ID/number (auto-generated if omitted)"),
+		legalName: z
+			.string()
+			.optional()
+			.describe("Legal name for tax/financial use"),
+		altName: z.string().optional().describe("Alternate display name"),
+		email: z.string().optional().describe("Primary email"),
+		altEmail: z.string().optional().describe("Alternate email"),
+		phone: z.string().optional().describe("Primary phone"),
+		altPhone: z.string().optional().describe("Alternate phone"),
+		mobilePhone: z.string().optional().describe("Mobile phone"),
+		homePhone: z.string().optional().describe("Home phone"),
+		fax: z.string().optional().describe("Fax number"),
+		url: z.string().optional().describe("Web URL"),
+		printOnCheckAs: z
+			.string()
+			.optional()
+			.describe("Name printed on the Pay to the Order of line of checks"),
+		subsidiary: nsRef.optional().describe("Primary subsidiary"),
+		currency: nsRef.optional().describe("Primary currency"),
+		terms: nsRef.optional().describe("Payment terms"),
+		category: nsRef.optional().describe("Vendor category"),
+		payablesAccount: nsRef.optional().describe("A/P account (account record)"),
+		expenseAccount: nsRef.optional().describe("Default expense GL account"),
+		defaultVendorPaymentAccount: nsRef
+			.optional()
+			.describe("Default payment account"),
+		taxItem: nsRef.optional().describe("Tax item / tax code"),
+		incoterm: nsRef.optional().describe("Incoterm"),
+		workCalendar: nsRef.optional().describe("Work calendar"),
+		taxIdNum: z
+			.string()
+			.optional()
+			.describe("Tax ID number (SSN for individual)"),
+		vatRegNumber: z.string().optional().describe("VAT registration number"),
+		accountNumber: z
+			.string()
+			.optional()
+			.describe("Account number the vendor uses for you"),
+		creditLimit: z.number().optional().describe("Credit limit amount"),
+		openingBalance: z
+			.number()
+			.optional()
+			.describe("Opening balance of this vendor"),
+		openingBalanceDate: z
+			.string()
+			.optional()
+			.describe("Opening balance date (YYYY-MM-DD)"),
+		openingBalanceAccount: nsRef
+			.optional()
+			.describe("GL account for opening balance"),
+		is1099Eligible: z
+			.boolean()
+			.optional()
+			.describe("Vendor requires annual 1099"),
+		isJobResourceVend: z
+			.boolean()
+			.optional()
+			.describe("Allow this vendor to be a resource on jobs/tasks"),
+		emailTransactions: z
+			.boolean()
+			.optional()
+			.describe("Prefer email for transaction delivery"),
+		printTransactions: z
+			.boolean()
+			.optional()
+			.describe("Prefer print for transaction delivery"),
+		faxTransactions: z
+			.boolean()
+			.optional()
+			.describe("Prefer fax for transaction delivery"),
+		isInactive: z.boolean().optional().describe("Inactive flag"),
+		comments: z.string().optional().describe("Comments / notes"),
+		externalId: z.string().optional().describe("External ID for integrations"),
+	})
+	.describe("Vendor record");
+
+export const vendorBodyPartial = vendorBody.partial();
+
+export const locationBody = z
+	.object({
+		name: z.string().optional().describe("Location name (required for create)"),
+		subsidiary: nsRef
+			.optional()
+			.describe(
+				"Primary subsidiary (OneWorld accounts — required when creating)",
+			),
+		parent: nsRef.optional().describe("Parent location for hierarchy"),
+		locationType: nsRef.optional().describe("Location type"),
+		tranPrefix: z
+			.string()
+			.optional()
+			.describe("Prefix used in auto-numbered transactions"),
+		makeInventoryAvailable: z
+			.boolean()
+			.optional()
+			.describe("On-hand stock at this location is available to sell"),
+		defaultAllocationPriority: z
+			.number()
+			.optional()
+			.describe("Default allocation priority"),
+		latitude: z.number().optional().describe("Latitude (decimal)"),
+		longitude: z.number().optional().describe("Longitude (decimal)"),
+		isInactive: z.boolean().optional().describe("Inactive flag"),
+		externalId: z.string().optional().describe("External ID for integrations"),
+	})
+	.describe("Location record");
+
+export const locationBodyPartial = locationBody.partial();
+
+export const accountBody = z
+	.object({
+		acctName: z
+			.string()
+			.optional()
+			.describe("Account name (required for create)"),
+		acctNumber: z
+			.string()
+			.optional()
+			.describe("Account number (used for GL identification)"),
+		acctType: nsRef
+			.optional()
+			.describe(
+				"Account type — reference to an account type record (e.g. Bank, AcctRec, AcctPay, Expense, Income, COGS, OthCurrAsset, etc.)",
+			),
+		description: z.string().optional().describe("Account description"),
+		parent: nsRef.optional().describe("Parent account (for hierarchy)"),
+		subsidiary: nsRef
+			.optional()
+			.describe("Primary subsidiary (OneWorld accounts)"),
+		currency: nsRef.optional().describe("Account currency"),
+		department: nsRef.optional().describe("Department restriction"),
+		location: nsRef.optional().describe("Location restriction"),
+		class: nsRef.optional().describe("Class restriction"),
+		billableExpensesAcct: nsRef
+			.optional()
+			.describe("Linked billable expenses account"),
+		category1099Misc: nsRef.optional().describe("1099-MISC category"),
+		openingBalance: z.number().optional().describe("Opening balance amount"),
+		tranDate: z
+			.string()
+			.optional()
+			.describe("Opening balance date (YYYY-MM-DD)"),
+		isInactive: z.boolean().optional().describe("Inactive flag"),
+		isSummary: z
+			.boolean()
+			.optional()
+			.describe("Reporting-only summary account"),
+		includeChildren: z
+			.boolean()
+			.optional()
+			.describe("Share with all sub-subsidiaries"),
+		eliminate: z
+			.boolean()
+			.optional()
+			.describe("Intercompany elimination account"),
+		revalue: z
+			.boolean()
+			.optional()
+			.describe("Include in open-balance currency revaluation"),
+		inventory: z
+			.boolean()
+			.optional()
+			.describe("Track inventory balance for this Other Current Asset account"),
+		reconcileWithMatching: z
+			.boolean()
+			.optional()
+			.describe("Enable for Match Bank Data and Reconcile"),
+		sBankName: z.string().optional().describe("Bank name (for bank accounts)"),
+		sBankRoutingNumber: z
+			.string()
+			.optional()
+			.describe("9-digit bank routing number"),
+		sBankCompanyId: z
+			.string()
+			.optional()
+			.describe("Bank account number (up to 20 digits)"),
+		curDocNum: z
+			.number()
+			.optional()
+			.describe("Next check number for this bank account"),
+		externalId: z.string().optional().describe("External ID for integrations"),
+	})
+	.describe("GL account record");
+
+export const accountBodyPartial = accountBody.partial();
+
+export const subsidiaryBody = z
+	.object({
+		name: z
+			.string()
+			.optional()
+			.describe("Subsidiary display name (required for create)"),
+		legalName: z.string().optional().describe("Legal name for tax forms"),
+		country: nsRef.optional().describe("Country reference"),
+		state: z.string().optional().describe("State / province"),
+		currency: nsRef.optional().describe("Base currency"),
+		parent: nsRef.optional().describe("Parent subsidiary"),
+		email: z.string().optional().describe("Return email"),
+		fax: z.string().optional().describe("Fax number"),
+		url: z.string().optional().describe("Web URL"),
+		federalIdNumber: z
+			.string()
+			.optional()
+			.describe("Tax identification number"),
+		taxRegistrationNumber: z
+			.string()
+			.optional()
+			.describe("Tax registration number"),
+		isElimination: z
+			.boolean()
+			.optional()
+			.describe("Mark as an elimination subsidiary"),
+		showSubsidiaryName: z
+			.boolean()
+			.optional()
+			.describe("Display subsidiary name with role in NetSuite UI"),
+		isInactive: z.boolean().optional().describe("Inactive flag"),
+		externalId: z.string().optional().describe("External ID for integrations"),
+	})
+	.describe("Subsidiary record");
+
+export const subsidiaryBodyPartial = subsidiaryBody.partial();

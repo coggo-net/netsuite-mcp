@@ -277,7 +277,7 @@ export function buildOpenAPISpec(defs: RouteDef[]) {
 		info: {
 			title: "NetSuite API",
 			description:
-				"REST API for managing NetSuite records — customers, inventory, sales orders, invoices, purchase orders, and raw SuiteQL queries.",
+				"REST API for managing NetSuite records — customers, inventory, sales orders, invoices, purchase orders, and vendor bills.",
 			version: "1.0.0",
 		},
 		paths,

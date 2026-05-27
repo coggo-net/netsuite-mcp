@@ -5,13 +5,16 @@ import {
 	type NetSuiteClient,
 } from "./netsuite-client.ts";
 import { createRestAPI } from "./routes/index.ts";
+import { registerAccountTools } from "./tools/accounts.ts";
 import { registerCustomerTools } from "./tools/customers.ts";
 import { registerInventoryTools } from "./tools/inventory.ts";
 import { registerInvoiceTools } from "./tools/invoices.ts";
+import { registerLocationTools } from "./tools/locations.ts";
 import { registerPurchaseOrderTools } from "./tools/purchase-orders.ts";
 import { registerSalesOrderTools } from "./tools/sales-orders.ts";
-import { registerSuiteQLTools } from "./tools/suiteql.ts";
+import { registerSubsidiaryTools } from "./tools/subsidiaries.ts";
 import { registerVendorBillTools } from "./tools/vendor-bills.ts";
+import { registerVendorTools } from "./tools/vendors.ts";
 
 let shared: { client: NetSuiteClient; api: NetSuiteAPI } | null = null;
 
@@ -24,7 +27,7 @@ function getShared() {
 }
 
 export function createMcpServer() {
-	const { client, api } = getShared();
+	const { api } = getShared();
 	const server = new McpServer({
 		name: "netsuite-mcp",
 		version: "0.1.0",
@@ -36,12 +39,15 @@ export function createMcpServer() {
 	registerInvoiceTools(server, api.invoices);
 	registerPurchaseOrderTools(server, api.purchaseOrders);
 	registerVendorBillTools(server, api.vendorBills);
-	registerSuiteQLTools(server, client);
+	registerVendorTools(server, api.vendors);
+	registerLocationTools(server, api.locations);
+	registerAccountTools(server, api.accounts);
+	registerSubsidiaryTools(server, api.subsidiaries);
 
 	return server;
 }
 
 export function createRestServer() {
-	const { client, api } = getShared();
-	return createRestAPI(api, client);
+	const { api } = getShared();
+	return createRestAPI(api);
 }

@@ -1,5 +1,5 @@
 import type { NetSuiteAPI } from "../api/index.ts";
-import type { NetSuiteClient } from "../netsuite-client.ts";
+import { accountRoutes } from "./accounts.ts";
 import { customerRoutes } from "./customers.ts";
 import {
 	buildBunRoutes,
@@ -8,12 +8,14 @@ import {
 } from "./framework.ts";
 import { inventoryRoutes } from "./inventory.ts";
 import { invoiceRoutes } from "./invoices.ts";
+import { locationRoutes } from "./locations.ts";
 import { purchaseOrderRoutes } from "./purchase-orders.ts";
 import { salesOrderRoutes } from "./sales-orders.ts";
-import { suiteqlRoutes } from "./suiteql.ts";
+import { subsidiaryRoutes } from "./subsidiaries.ts";
 import { vendorBillRoutes } from "./vendor-bills.ts";
+import { vendorRoutes } from "./vendors.ts";
 
-export function createRestAPI(api: NetSuiteAPI, client: NetSuiteClient) {
+export function createRestAPI(api: NetSuiteAPI) {
 	const allRoutes: RouteDef[] = [
 		...customerRoutes(api.customers),
 		...inventoryRoutes(api.inventory),
@@ -21,7 +23,10 @@ export function createRestAPI(api: NetSuiteAPI, client: NetSuiteClient) {
 		...invoiceRoutes(api.invoices),
 		...purchaseOrderRoutes(api.purchaseOrders),
 		...vendorBillRoutes(api.vendorBills),
-		...suiteqlRoutes(client),
+		...vendorRoutes(api.vendors),
+		...locationRoutes(api.locations),
+		...accountRoutes(api.accounts),
+		...subsidiaryRoutes(api.subsidiaries),
 	];
 
 	return {
