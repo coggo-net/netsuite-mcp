@@ -132,7 +132,7 @@ Example:
 Key fields:
 - itemId (string): Item name/number (SKU). Required. Max 250 chars.
 - displayName (string): Display name shown in UI.
-- subsidiary (object): {id: "1"} — subsidiary. Required.
+- subsidiary (object): {"items":[{"id":"1"}]} — subsidiary collection (OneWorld). Required. Item can be shared across multiple subsidiaries.
 - description (string): General description.
 - purchaseDescription (string): Description on purchase orders (max 999 chars).
 - salesDescription (string): Description on sales transactions.
@@ -152,7 +152,7 @@ Example:
 {
   "itemId": "BEER-CARLSBERG-330ML",
   "displayName": "Carlsberg Beer 330ml",
-  "subsidiary": {"id": "1"},
+  "subsidiary": {"items": [{"id": "1"}]},
   "purchaseDescription": "Carlsberg Beer 330ml x 24 cans",
   "salesDescription": "Carlsberg Beer 330ml",
   "cost": 12.50,

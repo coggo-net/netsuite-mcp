@@ -64,7 +64,7 @@ export function registerLocationTools(server: McpServer, api: LocationAPI) {
 
 Key fields:
 - name (string): Location name. Required.
-- subsidiary (object): {id: "1"} — primary subsidiary. Required on OneWorld accounts.
+- subsidiary (object): {"items":[{"id":"1"}]} — subsidiary collection. Required on OneWorld accounts. A location can belong to multiple subsidiaries.
 - parent (object): {id: "..."} — parent location for hierarchy.
 - locationType (object): {id: "..."} — location type reference.
 - tranPrefix (string): Prefix for auto-numbered transactions at this location.
@@ -76,7 +76,7 @@ Key fields:
 Example:
 {
   "name": "Duties Unpaid Warehouse",
-  "subsidiary": {"id": "1"},
+  "subsidiary": {"items": [{"id": "1"}]},
   "makeInventoryAvailable": true
 }`,
 		{

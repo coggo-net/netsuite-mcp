@@ -68,7 +68,7 @@ Key fields:
 - acctType (object): {id: "..."} — account type reference (Bank, AcctRec, AcctPay, Expense, Income, COGS, OthCurrAsset, etc.). Required.
 - description (string): Up to 255 chars.
 - parent (object): {id: "..."} — parent account for hierarchy.
-- subsidiary (object): {id: "1"} — primary subsidiary (OneWorld accounts).
+- subsidiary (object): {"items":[{"id":"1"}]} — subsidiary collection (OneWorld accounts). An account can be shared across multiple subsidiaries.
 - currency (object): {id: "1"} — account currency.
 - department, location, class (object): {id: "..."} — segment restrictions.
 - isInactive (boolean): Defaults to false.
@@ -82,7 +82,7 @@ Example — create an expense account:
 {
   "acctName": "Freight & Logistics",
   "acctType": {"id": "Expense"},
-  "subsidiary": {"id": "1"}
+  "subsidiary": {"items": [{"id": "1"}]}
 }`,
 		{
 			data: z

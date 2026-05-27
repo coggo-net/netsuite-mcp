@@ -4,6 +4,12 @@ export const nsRef = z
 	.object({ id: z.string() })
 	.describe("Reference by internal ID");
 
+export const nsRefCollection = z
+	.object({ items: z.array(nsRef) })
+	.describe(
+		'Collection of references by internal ID, e.g. {"items":[{"id":"1"}]} — used for fields that allow multiple values (OneWorld subsidiary lists, etc.).',
+	);
+
 const lotReceiptRef = z
 	.object({
 		id: z
@@ -153,7 +159,11 @@ export const inventoryItemBody = z
 			.optional()
 			.describe("Description on sales transactions"),
 		cost: z.number().optional().describe("Purchase price"),
-		subsidiary: nsRef.optional().describe("Subsidiary"),
+		subsidiary: nsRefCollection
+			.optional()
+			.describe(
+				'Subsidiary collection (OneWorld), e.g. {"items":[{"id":"1"}]}',
+			),
 		incomeAccount: nsRef.optional().describe("Income GL account"),
 		cogsAccount: nsRef.optional().describe("COGS GL account"),
 		assetAccount: nsRef.optional().describe("Asset GL account"),
@@ -281,7 +291,6 @@ export const vendorBillBody = z
 		terms: nsRef.optional().describe("Payment terms"),
 		account: nsRef.optional().describe("A/P account"),
 		approvalStatus: nsRef.optional().describe("Approval status"),
-		createdFrom: nsRef.optional().describe("Source purchase order ID"),
 		userTotal: z
 			.number()
 			.optional()
@@ -427,10 +436,10 @@ export const vendorBodyPartial = vendorBody.partial();
 export const locationBody = z
 	.object({
 		name: z.string().optional().describe("Location name (required for create)"),
-		subsidiary: nsRef
+		subsidiary: nsRefCollection
 			.optional()
 			.describe(
-				"Primary subsidiary (OneWorld accounts — required when creating)",
+				'Subsidiary collection (OneWorld — required when creating), e.g. {"items":[{"id":"1"}]}',
 			),
 		parent: nsRef.optional().describe("Parent location for hierarchy"),
 		locationType: nsRef.optional().describe("Location type"),
@@ -472,9 +481,11 @@ export const accountBody = z
 			),
 		description: z.string().optional().describe("Account description"),
 		parent: nsRef.optional().describe("Parent account (for hierarchy)"),
-		subsidiary: nsRef
+		subsidiary: nsRefCollection
 			.optional()
-			.describe("Primary subsidiary (OneWorld accounts)"),
+			.describe(
+				'Subsidiary collection (OneWorld), e.g. {"items":[{"id":"1"}]}',
+			),
 		currency: nsRef.optional().describe("Account currency"),
 		department: nsRef.optional().describe("Department restriction"),
 		location: nsRef.optional().describe("Location restriction"),
@@ -539,7 +550,11 @@ export const subsidiaryBody = z
 			.optional()
 			.describe("Subsidiary display name (required for create)"),
 		legalName: z.string().optional().describe("Legal name for tax forms"),
-		country: nsRef.optional().describe("Country reference"),
+		country: nsRef
+			.optional()
+			.describe(
+				'Country reference, id is an ISO 3166-1 alpha-2 code, e.g. {"id":"SG"}',
+			),
 		state: z.string().optional().describe("State / province"),
 		currency: nsRef.optional().describe("Base currency"),
 		parent: nsRef.optional().describe("Parent subsidiary"),
@@ -549,11 +564,9 @@ export const subsidiaryBody = z
 		federalIdNumber: z
 			.string()
 			.optional()
-			.describe("Tax identification number"),
-		taxRegistrationNumber: z
-			.string()
-			.optional()
-			.describe("Tax registration number"),
+			.describe(
+				"Tax identification number — US EIN, Australian ABN, UK / other VAT registration number, etc.",
+			),
 		isElimination: z
 			.boolean()
 			.optional()

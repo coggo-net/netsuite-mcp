@@ -65,12 +65,12 @@ export function registerSubsidiaryTools(server: McpServer, api: SubsidiaryAPI) {
 Key fields:
 - name (string): Subsidiary display name. Required.
 - legalName (string): Legal name as shown on tax forms.
-- country (object): {id: "..."} — country reference (e.g. {id: "_singapore"}).
+- country (object): {id: "<ISO-3166-1 alpha-2>"} — e.g. {id: "SG"}, {id: "US"}, {id: "MY"}.
 - state (string): State / province.
 - currency (object): {id: "1"} — base currency.
 - parent (object): {id: "..."} — parent subsidiary.
 - email, fax, url (string): Contact info.
-- federalIdNumber, taxRegistrationNumber (string): Tax IDs.
+- federalIdNumber (string): Tax ID — US EIN, Australian ABN, UK / other VAT registration number, etc.
 - isElimination (boolean): Mark as an elimination subsidiary for intercompany consolidation.
 - isInactive (boolean): Defaults to false.
 
@@ -78,7 +78,7 @@ Example:
 {
   "name": "Rejo Beverages Pte Ltd",
   "legalName": "Rejo Beverages Pte Ltd",
-  "country": {"id": "_singapore"},
+  "country": {"id": "SG"},
   "currency": {"id": "1"},
   "parent": {"id": "1"}
 }`,

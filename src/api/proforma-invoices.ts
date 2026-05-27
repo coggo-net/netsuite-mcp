@@ -41,10 +41,6 @@ export function registerProformaInvoiceAPI(client: NetSuiteClient) {
 			return client.deleteRecord(RECORD_TYPE, id);
 		},
 
-		search(keyword: string, params: Omit<ListParams, "q"> = {}) {
-			return client.listRecords(RECORD_TYPE, { ...params, q: keyword });
-		},
-
 		listRecent(limit = 20) {
 			return client.suiteQL(
 				`SELECT id, tranId, tranDate, entity, status, total, memo FROM transaction WHERE type = 'SalesOrd' ORDER BY tranDate DESC`,

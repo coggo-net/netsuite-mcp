@@ -77,6 +77,8 @@ export function registerVendorBillTools(server: McpServer, api: VendorBillAPI) {
 		"vendor_bill_create",
 		`Create a new vendor bill (supplier invoice) in NetSuite.
 
+For a PO-linked bill, do NOT use this tool — vendorBill has no createdFrom field and standalone-bill POST cannot inherit a PO. Use vendor_bill_create_from_po, which calls NetSuite's purchaseOrder -> vendorBill transform.
+
 Key fields:
 - entity (object): {id: "..."} — vendor. Required.
 - subsidiary (object): {id: "1"} — subsidiary.
@@ -86,7 +88,6 @@ Key fields:
 - memo (string): Bill memo.
 - currency (object): {id: "..."} — currency.
 - exchangeRate (number): Exchange rate.
-- createdFrom (object): {id: "..."} — source PO ID. Links bill to a PO.
 - department (object): {id: "..."} — department.
 - location (object): {id: "..."} — location.
 - terms (object): {id: "..."} — payment terms.
@@ -113,16 +114,6 @@ creation on STANDALONE vendor bills (returns INVALID_VALUE / USER_ERROR), even t
 same payload works on item receipts. If that happens, call inventory_lot_create first to
 pre-create the inventoryNumber master record, then resubmit the bill with
 receiptInventoryNumber: {id: "<returned-id>"}.
-
-Example — bill linked to a PO (line items auto-populated from PO):
-{
-  "entity": {"id": "265"},
-  "createdFrom": {"id": "4124"},
-  "tranId": "SUP-INV-2026-0042",
-  "tranDate": "2026-05-15",
-  "dueDate": "2026-06-14",
-  "memo": "Supplier invoice for PO000123"
-}
 
 Example — standalone bill:
 {

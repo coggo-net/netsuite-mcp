@@ -1,6 +1,6 @@
 # netsuite-mcp
 
-NetSuite MCP server over Streamable HTTP. Exposes 75 tools for managing customers, vendors, inventory, sales orders, Pro-Forma Invoices, invoices, purchase orders, vendor bills, locations, GL accounts, and subsidiaries via the NetSuite REST API.
+NetSuite MCP server over Streamable HTTP. Exposes 69 tools for managing customers, vendors, inventory, sales orders, Pro-Forma Invoices, invoices, purchase orders, vendor bills, locations, GL accounts, and subsidiaries via the NetSuite REST API.
 
 ## Prerequisites
 
