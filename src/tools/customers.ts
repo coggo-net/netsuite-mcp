@@ -77,7 +77,18 @@ Key fields:
 - creditLimit (number): Credit limit amount.
 - taxable (boolean): Whether customer pays sales tax.
 - isInactive (boolean): Defaults to false.
-- addressBook (object): Address list with addr1, city, state, zip, country.
+- addressBook (object): Address book sublist. Nested shape:
+    {"items": [
+      {
+        "defaultBilling": true,
+        "defaultShipping": true,
+        "label": "Main",
+        "addressBookAddress": {
+          "addr1": "...", "addr2": "...", "city": "...",
+          "state": "...", "zip": "...", "country": "<ISO-3166-1 alpha-2>"
+        }
+      }
+    ]}
 
 Example — create a company customer:
 {
