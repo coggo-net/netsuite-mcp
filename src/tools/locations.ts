@@ -6,17 +6,23 @@ import { err, ok } from "./helpers.ts";
 export function registerLocationTools(server: McpServer, api: LocationAPI) {
 	server.tool(
 		"location_list",
-		"List locations (warehouses, stores, branches) from NetSuite. Returns paginated location records (id, links). Use limit/offset for pagination. Typically small; loading all is fine.",
+		"List locations (warehouses, stores, branches) from NetSuite via Record API GET. Returns paginated location records (id, links). Use q for NetSuite filter expressions, and limit/offset for pagination.",
 		{
+			q: z
+				.string()
+				.optional()
+				.describe(
+					'Optional NetSuite Record API filter expression, e.g. name CONTAIN "Warehouse"',
+				),
 			limit: z
 				.number()
 				.optional()
 				.describe("Max records to return (default 100)"),
 			offset: z.number().optional().describe("Pagination offset"),
 		},
-		async ({ limit, offset }) => {
+		async ({ q, limit, offset }) => {
 			try {
-				return ok(await api.list({ limit, offset }));
+				return ok(await api.list({ q, limit, offset }));
 			} catch (e) {
 				return err(e);
 			}

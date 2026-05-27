@@ -6,17 +6,23 @@ import { err, ok } from "./helpers.ts";
 export function registerCustomerTools(server: McpServer, api: CustomerAPI) {
 	server.tool(
 		"customer_list",
-		"List customers from NetSuite. Returns paginated customer records with basic info (id, links). Use limit/offset for pagination.",
+		"List customers from NetSuite via Record API GET. Returns paginated customer records with basic info (id, links). Use q for NetSuite filter expressions, and limit/offset for pagination.",
 		{
+			q: z
+				.string()
+				.optional()
+				.describe(
+					'Optional NetSuite Record API filter expression, e.g. companyName CONTAIN "WINE"',
+				),
 			limit: z
 				.number()
 				.optional()
 				.describe("Max records to return (default 100)"),
 			offset: z.number().optional().describe("Pagination offset"),
 		},
-		async ({ limit, offset }) => {
+		async ({ q, limit, offset }) => {
 			try {
-				return ok(await api.list({ limit, offset }));
+				return ok(await api.list({ q, limit, offset }));
 			} catch (e) {
 				return err(e);
 			}
@@ -46,24 +52,6 @@ export function registerCustomerTools(server: McpServer, api: CustomerAPI) {
 		async ({ keyword, limit }) => {
 			try {
 				return ok(await api.search(keyword, { limit }));
-			} catch (e) {
-				return err(e);
-			}
-		},
-	);
-
-	server.tool(
-		"customer_search_sql",
-		"Query customers using SuiteQL. Available columns: id, entityId, companyName, email, phone, isInactive. Provide a WHERE clause.",
-		{
-			where: z
-				.string()
-				.describe("SuiteQL WHERE clause, e.g. \"companyName LIKE '%WINE%'\""),
-			limit: z.number().optional().describe("Max records (default 100)"),
-		},
-		async ({ where, limit }) => {
-			try {
-				return ok(await api.searchBySQL(where, limit));
 			} catch (e) {
 				return err(e);
 			}

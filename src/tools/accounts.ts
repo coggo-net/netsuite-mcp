@@ -6,17 +6,23 @@ import { err, ok } from "./helpers.ts";
 export function registerAccountTools(server: McpServer, api: AccountAPI) {
 	server.tool(
 		"account_list",
-		"List GL accounts (chart of accounts) from NetSuite. Returns paginated account records (id, links). Use limit/offset for pagination.",
+		"List GL accounts (chart of accounts) from NetSuite via Record API GET. Returns paginated account records (id, links). Use q for NetSuite filter expressions, and limit/offset for pagination.",
 		{
+			q: z
+				.string()
+				.optional()
+				.describe(
+					'Optional NetSuite Record API filter expression, e.g. acctName CONTAIN "Expense"',
+				),
 			limit: z
 				.number()
 				.optional()
 				.describe("Max records to return (default 100)"),
 			offset: z.number().optional().describe("Pagination offset"),
 		},
-		async ({ limit, offset }) => {
+		async ({ q, limit, offset }) => {
 			try {
-				return ok(await api.list({ limit, offset }));
+				return ok(await api.list({ q, limit, offset }));
 			} catch (e) {
 				return err(e);
 			}

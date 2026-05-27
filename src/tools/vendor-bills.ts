@@ -6,14 +6,20 @@ import { err, ok } from "./helpers.ts";
 export function registerVendorBillTools(server: McpServer, api: VendorBillAPI) {
 	server.tool(
 		"vendor_bill_list",
-		"List vendor bills (supplier invoices) from NetSuite. Returns paginated vendor bill records.",
+		"List vendor bills (supplier invoices) from NetSuite via Record API GET. Use q for NetSuite filter expressions, and limit/offset for pagination.",
 		{
+			q: z
+				.string()
+				.optional()
+				.describe(
+					'Optional NetSuite Record API filter expression, e.g. tranId CONTAIN "SUP-INV"',
+				),
 			limit: z.number().optional().describe("Max records to return"),
 			offset: z.number().optional().describe("Pagination offset"),
 		},
-		async ({ limit, offset }) => {
+		async ({ q, limit, offset }) => {
 			try {
-				return ok(await api.list({ limit, offset }));
+				return ok(await api.list({ q, limit, offset }));
 			} catch (e) {
 				return err(e);
 			}
@@ -43,26 +49,6 @@ export function registerVendorBillTools(server: McpServer, api: VendorBillAPI) {
 		async ({ keyword, limit }) => {
 			try {
 				return ok(await api.search(keyword, { limit }));
-			} catch (e) {
-				return err(e);
-			}
-		},
-	);
-
-	server.tool(
-		"vendor_bill_search_sql",
-		"Query vendor bills using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, foreignAmountUnpaid, dueDate, memo. Status A=Open, B=Paid In Full.",
-		{
-			where: z
-				.string()
-				.describe(
-					"SuiteQL WHERE clause, e.g. \"foreignAmountUnpaid > 0 AND entity = '265'\"",
-				),
-			limit: z.number().optional().describe("Max records (default 100)"),
-		},
-		async ({ where, limit }) => {
-			try {
-				return ok(await api.searchBySQL(where, limit));
 			} catch (e) {
 				return err(e);
 			}

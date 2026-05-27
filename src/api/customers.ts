@@ -30,13 +30,6 @@ export function registerCustomerAPI(client: NetSuiteClient) {
 				q: `companyName CONTAIN "${keyword}"`,
 			});
 		},
-
-		searchBySQL(where: string, limit = 100) {
-			return client.suiteQL(
-				`SELECT id, entityId, companyName, email, phone, isInactive FROM customer WHERE ${where}`,
-				{ limit },
-			);
-		},
 	};
 }
 

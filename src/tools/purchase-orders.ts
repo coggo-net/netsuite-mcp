@@ -9,14 +9,20 @@ export function registerPurchaseOrderTools(
 ) {
 	server.tool(
 		"purchase_order_list",
-		"List purchase orders from NetSuite. Returns paginated purchase order records.",
+		"List purchase orders from NetSuite via Record API GET. Use q for NetSuite filter expressions, and limit/offset for pagination.",
 		{
+			q: z
+				.string()
+				.optional()
+				.describe(
+					'Optional NetSuite Record API filter expression, e.g. tranId CONTAIN "PO"',
+				),
 			limit: z.number().optional().describe("Max records to return"),
 			offset: z.number().optional().describe("Pagination offset"),
 		},
-		async ({ limit, offset }) => {
+		async ({ q, limit, offset }) => {
 			try {
-				return ok(await api.list({ limit, offset }));
+				return ok(await api.list({ q, limit, offset }));
 			} catch (e) {
 				return err(e);
 			}
@@ -46,26 +52,6 @@ export function registerPurchaseOrderTools(
 		async ({ keyword, limit }) => {
 			try {
 				return ok(await api.search(keyword, { limit }));
-			} catch (e) {
-				return err(e);
-			}
-		},
-	);
-
-	server.tool(
-		"purchase_order_search_sql",
-		"Query purchase orders using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, memo. Status codes: B=Pending Receipt, G=Fully Received, H=Closed.",
-		{
-			where: z
-				.string()
-				.describe(
-					"SuiteQL WHERE clause, e.g. \"status = 'B' AND total > 5000\"",
-				),
-			limit: z.number().optional().describe("Max records (default 100)"),
-		},
-		async ({ where, limit }) => {
-			try {
-				return ok(await api.searchBySQL(where, limit));
 			} catch (e) {
 				return err(e);
 			}

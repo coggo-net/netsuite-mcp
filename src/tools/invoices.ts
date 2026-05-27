@@ -6,14 +6,20 @@ import { err, ok } from "./helpers.ts";
 export function registerInvoiceTools(server: McpServer, api: InvoiceAPI) {
 	server.tool(
 		"invoice_list",
-		"List invoices from NetSuite. Returns paginated invoice records.",
+		"List invoices from NetSuite via Record API GET. Use q for NetSuite filter expressions, and limit/offset for pagination.",
 		{
+			q: z
+				.string()
+				.optional()
+				.describe(
+					'Optional NetSuite Record API filter expression, e.g. tranId CONTAIN "INV"',
+				),
 			limit: z.number().optional().describe("Max records to return"),
 			offset: z.number().optional().describe("Pagination offset"),
 		},
-		async ({ limit, offset }) => {
+		async ({ q, limit, offset }) => {
 			try {
-				return ok(await api.list({ limit, offset }));
+				return ok(await api.list({ q, limit, offset }));
 			} catch (e) {
 				return err(e);
 			}
@@ -43,26 +49,6 @@ export function registerInvoiceTools(server: McpServer, api: InvoiceAPI) {
 		async ({ keyword, limit }) => {
 			try {
 				return ok(await api.search(keyword, { limit }));
-			} catch (e) {
-				return err(e);
-			}
-		},
-	);
-
-	server.tool(
-		"invoice_search_sql",
-		"Query invoices using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, foreignAmountUnpaid, dueDate, memo. Status A=Open, B=Paid In Full.",
-		{
-			where: z
-				.string()
-				.describe(
-					"SuiteQL WHERE clause, e.g. \"foreignAmountUnpaid > 0 AND entity = '1023'\"",
-				),
-			limit: z.number().optional().describe("Max records (default 100)"),
-		},
-		async ({ where, limit }) => {
-			try {
-				return ok(await api.searchBySQL(where, limit));
 			} catch (e) {
 				return err(e);
 			}

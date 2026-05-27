@@ -6,14 +6,20 @@ import { err, ok } from "./helpers.ts";
 export function registerInventoryTools(server: McpServer, api: InventoryAPI) {
 	server.tool(
 		"inventory_list",
-		"List inventory items from NetSuite. Returns paginated inventory item records. Each item includes id and links to the full record.",
+		"List inventory items from NetSuite via Record API GET. Returns paginated inventory item records. Use q for NetSuite filter expressions, and limit/offset for pagination.",
 		{
+			q: z
+				.string()
+				.optional()
+				.describe(
+					'Optional NetSuite Record API filter expression, e.g. itemId CONTAIN "BEER"',
+				),
 			limit: z.number().optional().describe("Max records to return"),
 			offset: z.number().optional().describe("Pagination offset"),
 		},
-		async ({ limit, offset }) => {
+		async ({ q, limit, offset }) => {
 			try {
-				return ok(await api.list({ limit, offset }));
+				return ok(await api.list({ q, limit, offset }));
 			} catch (e) {
 				return err(e);
 			}

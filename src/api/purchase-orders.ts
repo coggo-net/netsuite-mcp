@@ -44,13 +44,6 @@ export function registerPurchaseOrderAPI(client: NetSuiteClient) {
 			});
 		},
 
-		searchBySQL(where: string, limit = 100) {
-			return client.suiteQL(
-				`SELECT id, tranId, tranDate, entity, status, total, memo FROM transaction WHERE type = 'PurchOrd' AND ${where}`,
-				{ limit },
-			);
-		},
-
 		receive(data: Record<string, unknown>) {
 			const purchaseOrderId = getCreatedFromId(data);
 			const body = { ...data };

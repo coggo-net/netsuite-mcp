@@ -31,13 +31,6 @@ export function registerVendorBillAPI(client: NetSuiteClient) {
 			});
 		},
 
-		searchBySQL(where: string, limit = 100) {
-			return client.suiteQL(
-				`SELECT id, tranId, tranDate, entity, status, total, foreignAmountUnpaid, dueDate, memo FROM transaction WHERE type = 'VendBill' AND ${where}`,
-				{ limit },
-			);
-		},
-
 		getOverdue(limit = 100) {
 			return client.suiteQL(
 				`SELECT id, tranId, tranDate, entity, total, foreignAmountUnpaid, dueDate FROM transaction WHERE type = 'VendBill' AND foreignAmountUnpaid > 0 AND dueDate < SYSDATE ORDER BY dueDate ASC`,

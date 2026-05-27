@@ -4,7 +4,6 @@ import {
 	paginationQuery,
 	type RouteDef,
 	searchQuery,
-	sqlSearchBody,
 } from "./framework.ts";
 import { customerBody, customerBodyPartial } from "./schemas.ts";
 
@@ -30,16 +29,6 @@ export function customerRoutes(api: CustomerAPI): RouteDef[] {
 			query: searchQuery,
 			handler: async ({ query }) =>
 				api.search(query.keyword, { limit: query.limit }),
-		}),
-		defineRoute({
-			method: "post",
-			path: "/api/customers/search-sql",
-			operationId: "customer_search_sql",
-			summary: "Query customers with SuiteQL",
-			description:
-				"Query customers using SuiteQL. Available columns: id, entityId, companyName, email, phone, isInactive. Provide a WHERE clause.",
-			body: sqlSearchBody,
-			handler: async ({ body }) => api.searchBySQL(body.where, body.limit),
 		}),
 		defineRoute({
 			method: "get",

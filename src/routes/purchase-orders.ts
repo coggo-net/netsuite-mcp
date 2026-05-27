@@ -4,7 +4,6 @@ import {
 	paginationQuery,
 	type RouteDef,
 	searchQuery,
-	sqlSearchBody,
 } from "./framework.ts";
 import {
 	itemReceiptBody,
@@ -34,16 +33,6 @@ export function purchaseOrderRoutes(api: PurchaseOrderAPI): RouteDef[] {
 			query: searchQuery,
 			handler: async ({ query }) =>
 				api.search(query.keyword, { limit: query.limit }),
-		}),
-		defineRoute({
-			method: "post",
-			path: "/api/purchase-orders/search-sql",
-			operationId: "purchase_order_search_sql",
-			summary: "Query purchase orders with SuiteQL",
-			description:
-				"Query purchase orders using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, memo. Status codes: B=Pending Receipt, G=Fully Received, H=Closed.",
-			body: sqlSearchBody,
-			handler: async ({ body }) => api.searchBySQL(body.where, body.limit),
 		}),
 		defineRoute({
 			method: "post",

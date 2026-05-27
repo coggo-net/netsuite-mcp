@@ -5,7 +5,6 @@ import {
 	paginationQuery,
 	type RouteDef,
 	searchQuery,
-	sqlSearchBody,
 } from "./framework.ts";
 import {
 	vendorBillBody,
@@ -35,16 +34,6 @@ export function vendorBillRoutes(api: VendorBillAPI): RouteDef[] {
 			query: searchQuery,
 			handler: async ({ query }) =>
 				api.search(query.keyword, { limit: query.limit }),
-		}),
-		defineRoute({
-			method: "post",
-			path: "/api/vendor-bills/search-sql",
-			operationId: "vendor_bill_search_sql",
-			summary: "Query vendor bills with SuiteQL",
-			description:
-				"Query vendor bills using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, foreignAmountUnpaid, dueDate, memo. Status A=Open, B=Paid In Full.",
-			body: sqlSearchBody,
-			handler: async ({ body }) => api.searchBySQL(body.where, body.limit),
 		}),
 		defineRoute({
 			method: "get",

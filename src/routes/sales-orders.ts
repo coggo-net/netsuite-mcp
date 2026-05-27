@@ -6,7 +6,6 @@ import {
 	paginationQuery,
 	type RouteDef,
 	searchQuery,
-	sqlSearchBody,
 } from "./framework.ts";
 import { salesOrderBody, salesOrderBodyPartial } from "./schemas.ts";
 
@@ -35,16 +34,6 @@ export function salesOrderRoutes(
 			query: searchQuery,
 			handler: async ({ query }) =>
 				api.search(query.keyword, { limit: query.limit }),
-		}),
-		defineRoute({
-			method: "post",
-			path: "/api/sales-orders/search-sql",
-			operationId: "sales_order_search_sql",
-			summary: "Query sales orders with SuiteQL",
-			description:
-				"Query sales orders using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, memo. Status codes: B=Pending Fulfillment, G=Billed, H=Closed.",
-			body: sqlSearchBody,
-			handler: async ({ body }) => api.searchBySQL(body.where, body.limit),
 		}),
 		defineRoute({
 			method: "get",
@@ -93,16 +82,6 @@ export function salesOrderRoutes(
 				"List recent Pro-Forma Invoices ordered by date descending. Returns tranId, tranDate, entity, status, total, and memo via SuiteQL.",
 			query: limitQuery,
 			handler: async ({ query }) => piApi.listRecent(query.limit),
-		}),
-		defineRoute({
-			method: "post",
-			path: "/api/proforma-invoices/search-sql",
-			operationId: "pi_search_sql",
-			summary: "Query Pro-Forma Invoices with SuiteQL",
-			description:
-				"Query Pro-Forma Invoices using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, memo, dueDate. Status codes: B=Pending Fulfillment, G=Billed, H=Closed.",
-			body: sqlSearchBody,
-			handler: async ({ body }) => piApi.searchBySQL(body.where, body.limit),
 		}),
 	];
 }

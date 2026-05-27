@@ -46,13 +46,6 @@ export function registerSalesOrderAPI(client: NetSuiteClient) {
 				q: `tranId CONTAIN "${keyword}"`,
 			});
 		},
-
-		searchBySQL(where: string, limit = 100) {
-			return client.suiteQL(
-				`SELECT id, tranId, tranDate, entity, status, total, memo FROM transaction WHERE type = 'SalesOrd' AND ${where}`,
-				{ limit },
-			);
-		},
 	};
 }
 

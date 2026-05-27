@@ -15,6 +15,12 @@ export const limitQuery = z.object({
 });
 
 export const paginationQuery = z.object({
+	q: z
+		.string()
+		.optional()
+		.describe(
+			'NetSuite Record API filter expression, e.g. `tranId CONTAIN "INV"`',
+		),
 	limit: z.int().optional().describe("Max records to return"),
 	offset: z.int().optional().describe("Pagination offset"),
 });
@@ -22,11 +28,6 @@ export const paginationQuery = z.object({
 export const searchQuery = z.object({
 	keyword: z.string().describe("Keyword to search"),
 	limit: z.int().optional().describe("Max records to return"),
-});
-
-export const sqlSearchBody = z.object({
-	where: z.string().describe("SuiteQL WHERE clause"),
-	limit: z.int().optional().describe("Max records (default 100)"),
 });
 
 export interface RouteDef {

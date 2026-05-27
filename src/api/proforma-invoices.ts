@@ -45,13 +45,6 @@ export function registerProformaInvoiceAPI(client: NetSuiteClient) {
 			return client.listRecords(RECORD_TYPE, { ...params, q: keyword });
 		},
 
-		searchBySQL(where: string, limit = 100) {
-			return client.suiteQL(
-				`SELECT id, tranId, tranDate, entity, status, total, memo, dueDate FROM transaction WHERE type = 'SalesOrd' AND ${where}`,
-				{ limit },
-			);
-		},
-
 		listRecent(limit = 20) {
 			return client.suiteQL(
 				`SELECT id, tranId, tranDate, entity, status, total, memo FROM transaction WHERE type = 'SalesOrd' ORDER BY tranDate DESC`,

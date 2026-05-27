@@ -5,7 +5,6 @@ import {
 	paginationQuery,
 	type RouteDef,
 	searchQuery,
-	sqlSearchBody,
 } from "./framework.ts";
 import { invoiceBody, invoiceBodyPartial } from "./schemas.ts";
 
@@ -31,16 +30,6 @@ export function invoiceRoutes(api: InvoiceAPI): RouteDef[] {
 			query: searchQuery,
 			handler: async ({ query }) =>
 				api.search(query.keyword, { limit: query.limit }),
-		}),
-		defineRoute({
-			method: "post",
-			path: "/api/invoices/search-sql",
-			operationId: "invoice_search_sql",
-			summary: "Query invoices with SuiteQL",
-			description:
-				"Query invoices using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, foreignAmountUnpaid, dueDate, memo. Status A=Open, B=Paid In Full.",
-			body: sqlSearchBody,
-			handler: async ({ body }) => api.searchBySQL(body.where, body.limit),
 		}),
 		defineRoute({
 			method: "get",

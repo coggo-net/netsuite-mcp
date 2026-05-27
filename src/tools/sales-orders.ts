@@ -12,14 +12,20 @@ export function registerSalesOrderTools(
 ) {
 	server.tool(
 		"sales_order_list",
-		"List sales orders from NetSuite. In this account, sales orders include Pro-Forma Invoices (PI). Returns paginated records.",
+		"List sales orders from NetSuite via Record API GET. In this account, sales orders include Pro-Forma Invoices (PI). Use q for NetSuite filter expressions, and limit/offset for pagination.",
 		{
+			q: z
+				.string()
+				.optional()
+				.describe(
+					'Optional NetSuite Record API filter expression, e.g. tranId CONTAIN "PI"',
+				),
 			limit: z.number().optional().describe("Max records to return"),
 			offset: z.number().optional().describe("Pagination offset"),
 		},
-		async ({ limit, offset }) => {
+		async ({ q, limit, offset }) => {
 			try {
-				return ok(await api.list({ limit, offset }));
+				return ok(await api.list({ q, limit, offset }));
 			} catch (e) {
 				return err(e);
 			}
@@ -49,26 +55,6 @@ export function registerSalesOrderTools(
 		async ({ keyword, limit }) => {
 			try {
 				return ok(await api.search(keyword, { limit }));
-			} catch (e) {
-				return err(e);
-			}
-		},
-	);
-
-	server.tool(
-		"sales_order_search_sql",
-		"Query sales orders using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, memo. Status codes: B=Pending Fulfillment, G=Billed, H=Closed.",
-		{
-			where: z
-				.string()
-				.describe(
-					"SuiteQL WHERE clause, e.g. \"tranId LIKE 'PI%' AND status = 'B'\"",
-				),
-			limit: z.number().optional().describe("Max records (default 100)"),
-		},
-		async ({ where, limit }) => {
-			try {
-				return ok(await api.searchBySQL(where, limit));
 			} catch (e) {
 				return err(e);
 			}
@@ -213,26 +199,6 @@ Example — header-only change: {"memo": "Updated memo", "shipDate": "2026-06-01
 		async ({ limit }) => {
 			try {
 				return ok(await piApi.listRecent(limit));
-			} catch (e) {
-				return err(e);
-			}
-		},
-	);
-
-	server.tool(
-		"pi_search_sql",
-		"Query Pro-Forma Invoices using SuiteQL. Available columns: id, tranId, tranDate, entity, status, total, memo, dueDate. Status codes: B=Pending Fulfillment, G=Billed, H=Closed.",
-		{
-			where: z
-				.string()
-				.describe(
-					"SuiteQL WHERE clause, e.g. \"status = 'B' AND total > 10000\"",
-				),
-			limit: z.number().optional().describe("Max records (default 100)"),
-		},
-		async ({ where, limit }) => {
-			try {
-				return ok(await piApi.searchBySQL(where, limit));
 			} catch (e) {
 				return err(e);
 			}

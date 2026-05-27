@@ -6,17 +6,23 @@ import { err, ok } from "./helpers.ts";
 export function registerSubsidiaryTools(server: McpServer, api: SubsidiaryAPI) {
 	server.tool(
 		"subsidiary_list",
-		"List subsidiaries from NetSuite. OneWorld accounts only. Returns paginated subsidiary records (id, links). The list is usually small — loading all is fine.",
+		"List subsidiaries from NetSuite via Record API GET. OneWorld accounts only. Returns paginated subsidiary records (id, links). Use q for NetSuite filter expressions, and limit/offset for pagination.",
 		{
+			q: z
+				.string()
+				.optional()
+				.describe(
+					'Optional NetSuite Record API filter expression, e.g. name CONTAIN "Singapore"',
+				),
 			limit: z
 				.number()
 				.optional()
 				.describe("Max records to return (default 100)"),
 			offset: z.number().optional().describe("Pagination offset"),
 		},
-		async ({ limit, offset }) => {
+		async ({ q, limit, offset }) => {
 			try {
-				return ok(await api.list({ limit, offset }));
+				return ok(await api.list({ q, limit, offset }));
 			} catch (e) {
 				return err(e);
 			}
