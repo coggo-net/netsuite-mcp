@@ -1,6 +1,8 @@
 import { logger } from "./logger.ts";
 
 const textEncoder = new TextEncoder();
+const RECORD_CONTENT_TYPE =
+	"application/vnd.oracle.resource+json; type=singular";
 
 export interface NetSuiteConfig {
 	accountId: string;
@@ -197,6 +199,21 @@ export class NetSuiteClient {
 		return qs.length ? `?${qs.join("&")}` : "";
 	}
 
+	private async parseMutationResponse(
+		res: Response,
+	): Promise<Record<string, unknown>> {
+		const location = res.headers.get("Location");
+		if (location) {
+			const id = location.split("/").pop() ?? "";
+			return { id };
+		}
+		const contentType = res.headers.get("content-type") ?? "";
+		if (contentType.includes("json")) {
+			return (await res.json()) as Record<string, unknown>;
+		}
+		return {};
+	}
+
 	async listRecords(
 		recordType: string,
 		params: ListParams = {},
@@ -227,17 +244,9 @@ export class NetSuiteClient {
 		// trailing id so callers don't need a second round-trip to discover it.
 		const res = await this.fetchRaw("POST", `/record/v1/${recordType}`, {
 			body: data,
+			headers: { "Content-Type": RECORD_CONTENT_TYPE },
 		});
-		const location = res.headers.get("Location");
-		if (location) {
-			const id = location.split("/").pop() ?? "";
-			return { id };
-		}
-		const contentType = res.headers.get("content-type") ?? "";
-		if (contentType.includes("json")) {
-			return (await res.json()) as Record<string, unknown>;
-		}
-		return {};
+		return this.parseMutationResponse(res);
 	}
 
 	async updateRecord(
@@ -251,13 +260,36 @@ export class NetSuiteClient {
 		// pass them via ?replace=... so the provided array is the new sublist.
 		const sublists = detectSublists(data);
 		const qs = sublists.length ? `?replace=${sublists.join(",")}` : "";
-		return (await this.request("PATCH", `/record/v1/${recordType}/${id}${qs}`, {
-			body: data,
-		})) as Record<string, unknown>;
+		const res = await this.fetchRaw(
+			"PATCH",
+			`/record/v1/${recordType}/${id}${qs}`,
+			{
+				body: data,
+				headers: { "Content-Type": RECORD_CONTENT_TYPE },
+			},
+		);
+		return this.parseMutationResponse(res);
 	}
 
 	async deleteRecord(recordType: string, id: string): Promise<unknown> {
 		return this.request("DELETE", `/record/v1/${recordType}/${id}`);
+	}
+
+	async transformRecord(
+		sourceRecordType: string,
+		sourceId: string,
+		targetRecordType: string,
+		data: Record<string, unknown> = {},
+	): Promise<Record<string, unknown>> {
+		const res = await this.fetchRaw(
+			"POST",
+			`/record/v1/${sourceRecordType}/${sourceId}/!transform/${targetRecordType}`,
+			{
+				body: data,
+				headers: { "Content-Type": RECORD_CONTENT_TYPE },
+			},
+		);
+		return this.parseMutationResponse(res);
 	}
 
 	// --- SuiteQL ---

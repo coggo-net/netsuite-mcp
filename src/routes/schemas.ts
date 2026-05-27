@@ -307,11 +307,15 @@ export const vendorBillFromPOBody = z
 			.optional()
 			.describe("User-entered total for verification"),
 	})
-	.describe("Vendor bill created by transforming a purchase order");
+	.describe(
+		"Vendor bill created by transforming a purchase order. purchaseOrderId is the source purchase order internal ID; the other fields are optional header overrides sent to NetSuite's purchaseOrder -> vendorBill transform.",
+	);
 
 export const itemReceiptBody = z
 	.object({
-		createdFrom: nsRef.describe("Source purchase order ID"),
+		createdFrom: nsRef.describe(
+			"Source purchase order internal ID. The API uses this as the path id for NetSuite's purchaseOrder -> itemReceipt transform and does not send createdFrom in the transform body.",
+		),
 		tranDate: z.string().optional().describe("Receipt date (YYYY-MM-DD)"),
 		memo: z.string().optional().describe("Receipt notes"),
 		item: z
@@ -319,7 +323,9 @@ export const itemReceiptBody = z
 			.optional()
 			.describe("Receipt lines"),
 	})
-	.describe("Item receipt");
+	.describe(
+		"Item receipt created by transforming a purchase order. Provide createdFrom.id as the source PO id plus optional receipt header fields and receipt lines.",
+	);
 
 export const vendorBody = z
 	.object({

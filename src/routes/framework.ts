@@ -11,22 +11,22 @@ type ExtractParams<P extends string> =
 type ParamsOf<P extends string> = Record<ExtractParams<P>, string>;
 
 export const limitQuery = z.object({
-	limit: z.number().optional().describe("Max records to return"),
+	limit: z.int().optional().describe("Max records to return"),
 });
 
 export const paginationQuery = z.object({
-	limit: z.number().optional().describe("Max records to return"),
-	offset: z.number().optional().describe("Pagination offset"),
+	limit: z.int().optional().describe("Max records to return"),
+	offset: z.int().optional().describe("Pagination offset"),
 });
 
 export const searchQuery = z.object({
 	keyword: z.string().describe("Keyword to search"),
-	limit: z.number().optional().describe("Max records to return"),
+	limit: z.int().optional().describe("Max records to return"),
 });
 
 export const sqlSearchBody = z.object({
 	where: z.string().describe("SuiteQL WHERE clause"),
-	limit: z.number().optional().describe("Max records (default 100)"),
+	limit: z.int().optional().describe("Max records (default 100)"),
 });
 
 export interface RouteDef {
@@ -106,7 +106,11 @@ export function buildBunRoutes(defs: RouteDef[]) {
 
 	for (const def of defs) {
 		const { path } = def;
-		if (!routes[path]) routes[path] = {};
+		let routeHandlers = routes[path];
+		if (!routeHandlers) {
+			routeHandlers = {};
+			routes[path] = routeHandlers;
+		}
 
 		const numericFields = new Set<string>();
 		const queryKeys: string[] = [];
@@ -126,7 +130,7 @@ export function buildBunRoutes(defs: RouteDef[]) {
 			operationId: def.operationId,
 		};
 
-		routes[path]![def.method.toUpperCase()] = async (req: Request) => {
+		routeHandlers[def.method.toUpperCase()] = async (req: Request) => {
 			const start = Date.now();
 			logger.info(logCtx, "api request");
 			try {
@@ -200,7 +204,11 @@ export function buildOpenAPISpec(defs: RouteDef[]) {
 
 	for (const def of defs) {
 		const openApiPath = def.path.replace(/:(\w+)/g, "{$1}");
-		if (!paths[openApiPath]) paths[openApiPath] = {};
+		let pathOperations = paths[openApiPath];
+		if (!pathOperations) {
+			pathOperations = {};
+			paths[openApiPath] = pathOperations;
+		}
 
 		const operation: Record<string, unknown> = {
 			operationId: def.operationId,
@@ -269,7 +277,7 @@ export function buildOpenAPISpec(defs: RouteDef[]) {
 			};
 		}
 
-		paths[openApiPath]![def.method] = operation;
+		pathOperations[def.method] = operation;
 	}
 
 	return {

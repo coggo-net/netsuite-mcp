@@ -18,10 +18,10 @@ export function suiteqlRoutes(client: NetSuiteClient): RouteDef[] {
 						"Full SuiteQL query, e.g. \"SELECT id, tranId FROM transaction WHERE type = 'SalesOrd' ORDER BY tranDate DESC\"",
 					),
 				limit: z
-					.number()
+					.int()
 					.optional()
 					.describe("Max records to return (default 100)"),
-				offset: z.number().optional().describe("Pagination offset"),
+				offset: z.int().optional().describe("Pagination offset"),
 			}),
 			handler: async ({ body }) =>
 				client.suiteQL(body.query, {

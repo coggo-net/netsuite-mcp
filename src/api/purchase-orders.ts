@@ -2,6 +2,19 @@ import type { ListParams, NetSuiteClient } from "../netsuite-client.ts";
 
 const RECORD_TYPE = "purchaseOrder";
 
+function getCreatedFromId(data: Record<string, unknown>): string {
+	const createdFrom = data.createdFrom;
+	if (createdFrom && typeof createdFrom === "object" && "id" in createdFrom) {
+		const id = (createdFrom as { id: unknown }).id;
+		if (typeof id === "string" || typeof id === "number") {
+			return String(id);
+		}
+	}
+	throw new Error(
+		"purchase_order_receive requires data.createdFrom.id with the source purchase order internal ID",
+	);
+}
+
 export function registerPurchaseOrderAPI(client: NetSuiteClient) {
 	return {
 		list(params: ListParams = {}) {
@@ -39,7 +52,15 @@ export function registerPurchaseOrderAPI(client: NetSuiteClient) {
 		},
 
 		receive(data: Record<string, unknown>) {
-			return client.createRecord("itemReceipt", data);
+			const purchaseOrderId = getCreatedFromId(data);
+			const body = { ...data };
+			delete body.createdFrom;
+			return client.transformRecord(
+				RECORD_TYPE,
+				purchaseOrderId,
+				"itemReceipt",
+				body,
+			);
 		},
 	};
 }

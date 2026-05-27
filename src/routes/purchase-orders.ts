@@ -49,9 +49,9 @@ export function purchaseOrderRoutes(api: PurchaseOrderAPI): RouteDef[] {
 			method: "post",
 			path: "/api/purchase-orders/receive",
 			operationId: "purchase_order_receive",
-			summary: "Receive items against a purchase order",
+			summary: "Transform a purchase order into an item receipt",
 			description:
-				"Create an item receipt to record physical receipt of goods against a purchase order.",
+				"Create an item receipt by transforming a purchase order through NetSuite's purchaseOrder -> itemReceipt transform endpoint. Provide createdFrom.id as the source purchase order internal ID; the API uses it as the transform path id and sends the remaining receipt fields as optional overrides. Returns the created item receipt id when NetSuite includes a Location header.",
 			body: itemReceiptBody,
 			successStatus: 201,
 			handler: async ({ body }) => api.receive(body),

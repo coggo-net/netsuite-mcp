@@ -49,11 +49,12 @@ export function registerVendorBillAPI(client: NetSuiteClient) {
 			purchaseOrderId: string,
 			data: Record<string, unknown> = {},
 		) {
-			return (await client.request(
-				"POST",
-				`/record/v1/purchaseOrder/${purchaseOrderId}/!transform/vendorBill`,
-				{ body: data },
-			)) as Record<string, unknown>;
+			return client.transformRecord(
+				"purchaseOrder",
+				purchaseOrderId,
+				"vendorBill",
+				data,
+			);
 		},
 	};
 }

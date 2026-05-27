@@ -60,9 +60,9 @@ export function vendorBillRoutes(api: VendorBillAPI): RouteDef[] {
 			method: "post",
 			path: "/api/vendor-bills/from-purchase-order",
 			operationId: "vendor_bill_create_from_po",
-			summary: "Create a vendor bill from a purchase order",
+			summary: "Transform a purchase order into a vendor bill",
 			description:
-				"Create a vendor bill by transforming a purchase order. NetSuite populates vendor, line items, and amounts from the PO; override only the header fields you need (tranId for supplier invoice number, tranDate, dueDate, memo, userTotal).",
+				"Create a vendor bill by transforming a purchase order through NetSuite's purchaseOrder -> vendorBill transform endpoint. NetSuite populates vendor, line items, and amounts from the PO; provide purchaseOrderId as the source purchase order internal ID and override only the header fields you need (tranId for supplier invoice number, tranDate, dueDate, memo, userTotal). Returns the created vendor bill id when NetSuite includes a Location header.",
 			body: vendorBillFromPOBody,
 			successStatus: 201,
 			handler: async ({ body }) => {
