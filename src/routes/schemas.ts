@@ -10,23 +10,6 @@ export const nsRefCollection = z
 		'Collection of references by internal ID, e.g. {"items":[{"id":"1"}]} — used for fields that allow multiple values (OneWorld subsidiary lists, etc.).',
 	);
 
-const lotReceiptRef = z
-	.object({
-		id: z
-			.string()
-			.optional()
-			.describe("Existing inventoryNumber record id (for re-receiving a lot)"),
-		refName: z
-			.string()
-			.optional()
-			.describe(
-				"New lot/serial number string — NetSuite auto-creates the inventoryNumber master record",
-			),
-	})
-	.describe(
-		"Lot reference for inbound transactions. Provide id for an existing lot, or refName to auto-create a new one. Fallback: if refName auto-create is rejected by NetSuite (INVALID_VALUE / USER_ERROR — known to happen on standalone Vendor Bills under some account configs), pre-create the inventoryNumber via inventory_lot_create and pass {id: '<returned-id>'} instead.",
-	);
-
 const inventoryAssignmentItem = z.object({
 	quantity: z.number().describe("Quantity assigned to this lot"),
 	issueInventoryNumber: nsRef
@@ -34,10 +17,11 @@ const inventoryAssignmentItem = z.object({
 		.describe(
 			"OUTBOUND only (Sales Order / PI / Invoice / outbound Inventory Adjustment). Existing lot record id — use the id returned by inventory_search_lot_numbers.",
 		),
-	receiptInventoryNumber: lotReceiptRef
+	receiptInventoryNumber: z
+		.string()
 		.optional()
 		.describe(
-			"INBOUND only (Purchase Order receipt / Vendor Bill / Item Receipt / inbound Inventory Adjustment). Use {id} to reference an existing lot, or {refName} to create a new lot.",
+			'INBOUND only (Item Receipt / Vendor Bill / inbound Inventory Adjustment). Pass the lot/serial NUMBER STRING directly, e.g. "SBLF2672". NetSuite auto-creates the inventoryNumber master record on the inbound transaction if it doesn\'t exist yet — there is no separate {id} vs {refName} object form. Per NetSuite metadata-catalog this field is `{type: "string"}` on every inbound record type.',
 		),
 	expirationDate: z.string().optional().describe("Lot expiration (YYYY-MM-DD)"),
 	binNumber: nsRef.optional().describe("Bin reference"),
@@ -94,13 +78,19 @@ const transferLineItem = z.object({
 });
 
 const receiptLineItem = z.object({
+	orderLine: z
+		.number()
+		.optional()
+		.describe(
+			"1-based index of the source purchase-order line this receipt line is filling. REQUIRED when the receipt is created via the purchaseOrder → itemReceipt transform — without it NetSuite tries to append a new line to an item sublist that is actually pre-populated and read-only, and returns USER_ERROR 'invalid sublist or line item operation'.",
+		),
 	item: nsRef.describe("Item being received"),
 	quantity: z.number().describe("Quantity received"),
 	location: nsRef.optional().describe("Receiving location"),
 	inventoryDetail: inventoryDetail
 		.optional()
 		.describe(
-			"Lot/serial assignment for lot-tracked items. Use receiptInventoryNumber: provide {refName} to auto-create a new lot, or {id} to receive against an existing lot.",
+			'Lot/serial assignment for lot-tracked items. Set inventoryDetail.quantity = line quantity and inventoryAssignment.items[].receiptInventoryNumber to the lot/serial NUMBER STRING (e.g. "SBLF2672"). NetSuite auto-creates the inventoryNumber master record here — Item Receipt is the most reliable place for this in accounts that block standalone lot creation.',
 		),
 });
 

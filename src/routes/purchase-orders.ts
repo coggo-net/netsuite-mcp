@@ -40,7 +40,7 @@ export function purchaseOrderRoutes(api: PurchaseOrderAPI): RouteDef[] {
 			operationId: "purchase_order_receive",
 			summary: "Transform a purchase order into an item receipt",
 			description:
-				"Create an item receipt by transforming a purchase order through NetSuite's purchaseOrder -> itemReceipt transform endpoint. Provide createdFrom.id as the source purchase order internal ID; the API uses it as the transform path id and sends the remaining receipt fields as optional overrides. Returns the created item receipt id when NetSuite includes a Location header.",
+				'Create an item receipt by transforming a purchase order through NetSuite\'s purchaseOrder -> itemReceipt transform endpoint. Provide createdFrom.id as the source purchase order internal ID; the API uses it as the transform path id and sends the remaining receipt fields as optional overrides. Returns the created item receipt id when NetSuite includes a Location header. IMPORTANT: each receipt line must include `orderLine` (the 1-based index of the source PO line) — without it NetSuite treats the items array as new lines on a read-only sublist and returns USER_ERROR "invalid sublist or line item operation". For lot-tracked items set receiptInventoryNumber to the lot/serial NUMBER STRING (e.g. "SBLF2672"); NetSuite auto-creates the inventoryNumber master record on the receipt.',
 			body: itemReceiptBody,
 			successStatus: 201,
 			handler: async ({ body }) => api.receive(body),

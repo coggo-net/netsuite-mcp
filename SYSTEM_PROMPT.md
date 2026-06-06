@@ -37,10 +37,12 @@ When a user provides a customer Purchase Order (PDF, Excel, or text):
 
 When the user is receiving or billing lot-tracked items:
 
-1. **Prefer PO → Item Receipt → Vendor Bill** — this is the standard workflow. Lot records get created on the Item Receipt (where `{refName: "..."}` auto-create is most reliable), then the Vendor Bill is `vendor_bill_create_from_po`-transformed and inherits the lots.
-2. **Standalone Vendor Bill with a new lot** — if no PO exists, just call `vendor_bill_create` with `receiptInventoryNumber: {refName: "<lot>"}`. The endpoint now auto-falls-back to pre-create + retry if NetSuite rejects inline creation, so the caller does NOT need to orchestrate `inventory_lot_create` manually.
-3. **Hard block on standalone lot creation** — some accounts also block `inventory_lot_create` ("cannot create a standalone inventory number record"). When that happens, `vendor_bill_create` surfaces an explicit error message pointing here: the only remaining path is `purchase_order_create` → `purchase_order_receive` (lot auto-creates on the receipt) → `vendor_bill_create_from_po`. Never tell the user to do this manually in the NetSuite UI unless every API path has been tried.
-4. **inventoryDetail.quantity** must equal the line quantity, and the sum of `inventoryAssignment.items[].quantity` must also equal it — otherwise NetSuite silently drops the assignment.
+1. **Prefer PO → Item Receipt → Vendor Bill** — this is the standard workflow. Lot records get created on the Item Receipt (most reliable place; many accounts block lot creation everywhere else). The Vendor Bill is then `vendor_bill_create_from_po`-transformed and inherits the lots.
+2. **Lot field shape** — `receiptInventoryNumber` is a plain STRING on every inbound record per NetSuite's metadata catalog (`{type: "string"}`). Pass `"SBLF2672"` directly, NOT `{refName: "SBLF2672"}` or `{id: "..."}`. The string form auto-creates the lot if it doesn't exist; there is no separate object form.
+3. **`orderLine` on receipts** — when transforming a PO into an Item Receipt, each line in `item.items` MUST include `orderLine: <1-based source PO line index>`. Without it NetSuite returns USER_ERROR "invalid sublist or line item operation" because the receipt's item sublist is pre-populated and read-only.
+4. **Standalone Vendor Bill with a new lot** — only attempt this if no PO exists. Many accounts reject inline lot creation on standalone vendor bills (INVALID_VALUE on `receiptInventoryNumber`). When that happens, fall back to PO → Receipt → Bill via the steps above.
+5. **`inventory_lot_create` is usually blocked** — most accounts disallow standalone inventoryNumber creation ("cannot create a standalone inventory number record"). The endpoint exists but should not be relied on; born-on-receipt is the canonical path.
+6. **inventoryDetail.quantity** must equal the line quantity, and the sum of `inventoryAssignment.items[].quantity` must also equal it — otherwise NetSuite silently drops the assignment.
 
 ### General Record Operations
 

@@ -1,6 +1,17 @@
 import { logger } from "./logger.ts";
 
 const textEncoder = new TextEncoder();
+
+// OAuth 1.0 (RFC 5849) signature base strings require RFC 3986 percent-encoding,
+// which encodes !, *, ', (, ) — characters that encodeURIComponent leaves
+// unencoded. Without this, NetSuite transform URLs like ".../!transform/..."
+// produce a mismatched signature and the request returns 401 INVALID_LOGIN.
+function rfc3986(s: string): string {
+	return encodeURIComponent(s).replace(
+		/[!*'()]/g,
+		(c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+	);
+}
 const RECORD_CONTENT_TYPE =
 	"application/vnd.oracle.resource+json; type=singular";
 
@@ -101,16 +112,13 @@ export class NetSuiteClient {
 
 		const sortedParams = Object.keys(params)
 			.sort()
-			.map(
-				(k) =>
-					`${encodeURIComponent(k)}=${encodeURIComponent(params[k] as string)}`,
-			)
+			.map((k) => `${rfc3986(k)}=${rfc3986(params[k] as string)}`)
 			.join("&");
 
 		const baseString = [
 			method.toUpperCase(),
-			encodeURIComponent(urlBase),
-			encodeURIComponent(sortedParams),
+			rfc3986(urlBase),
+			rfc3986(sortedParams),
 		].join("&");
 
 		const key = await this.getSigningKey();
@@ -126,10 +134,7 @@ export class NetSuiteClient {
 		const header = Object.keys(params)
 			.filter((k) => k.startsWith("oauth_"))
 			.sort()
-			.map(
-				(k) =>
-					`${encodeURIComponent(k)}="${encodeURIComponent(params[k] as string)}"`,
-			)
+			.map((k) => `${rfc3986(k)}="${rfc3986(params[k] as string)}"`)
 			.join(", ");
 
 		return `OAuth realm="${this.config.accountId}", ${header}`;
