@@ -38,8 +38,8 @@ When a user provides a customer Purchase Order (PDF, Excel, or text):
 When the user is receiving or billing lot-tracked items:
 
 1. **Prefer PO → Item Receipt → Vendor Bill** — this is the standard workflow. Lot records get created on the Item Receipt (where `{refName: "..."}` auto-create is most reliable), then the Vendor Bill is `vendor_bill_create_from_po`-transformed and inherits the lots.
-2. **Standalone Vendor Bill with a new lot** — if no PO exists, try `vendor_bill_create` with `receiptInventoryNumber: {refName: "<lot>"}` first. Some NetSuite account configurations reject inline lot auto-create on standalone Vendor Bills (returns `INVALID_VALUE` / `USER_ERROR`).
-3. **Fallback on rejection** — call `inventory_lot_create` to pre-create the inventoryNumber master record, then retry the Vendor Bill with `receiptInventoryNumber: {id: "<returned-id>"}`. Never tell the user to do this manually in the NetSuite UI unless every API path has been tried.
+2. **Standalone Vendor Bill with a new lot** — if no PO exists, just call `vendor_bill_create` with `receiptInventoryNumber: {refName: "<lot>"}`. The endpoint now auto-falls-back to pre-create + retry if NetSuite rejects inline creation, so the caller does NOT need to orchestrate `inventory_lot_create` manually.
+3. **Hard block on standalone lot creation** — some accounts also block `inventory_lot_create` ("cannot create a standalone inventory number record"). When that happens, `vendor_bill_create` surfaces an explicit error message pointing here: the only remaining path is `purchase_order_create` → `purchase_order_receive` (lot auto-creates on the receipt) → `vendor_bill_create_from_po`. Never tell the user to do this manually in the NetSuite UI unless every API path has been tried.
 4. **inventoryDetail.quantity** must equal the line quantity, and the sum of `inventoryAssignment.items[].quantity` must also equal it — otherwise NetSuite silently drops the assignment.
 
 ### General Record Operations
