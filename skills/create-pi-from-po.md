@@ -21,8 +21,8 @@ Present the extracted data to the user for verification before proceeding.
 
 Search for the customer in NetSuite:
 
-1. Use `customer_search` with the company name extracted from the PO
-2. If no match, try `customer_search_sql` with partial name matching
+1. Use `customer_search` with the company name extracted from the PO (matches `companyName CONTAIN`).
+2. If no hits, retry with a shorter/partial keyword from the company name. If `q` fails with `NONEXISTENT_FIELD`, call `metadata_get` for `customer` and pick another field from `filterable` (e.g. `entityId`, `email`).
 3. If multiple matches are found, present them to the user to choose
 4. If no match is found, ask the user whether to create a new customer or select an existing one manually
 
