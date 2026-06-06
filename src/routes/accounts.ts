@@ -25,7 +25,7 @@ export function accountRoutes(api: AccountAPI): RouteDef[] {
 			operationId: "account_search",
 			summary: "Search accounts by name",
 			description:
-				"Search GL accounts by name keyword. Uses NetSuite's CONTAIN operator on the `acctName` field. Useful for finding A/P, A/R, expense, or revenue accounts to use in vendor bills, invoices, and journal entries.",
+				"Search GL accounts by name keyword. Uses NetSuite's CONTAIN operator on the `fullName` field (the only name-style field in account's filterable set). Useful for finding A/P, A/R, expense, or revenue accounts to use in vendor bills, invoices, and journal entries.",
 			query: searchQuery,
 			handler: async ({ query }) =>
 				api.search(query.keyword, { limit: query.limit }),

@@ -1,6 +1,6 @@
 # netsuite-mcp
 
-NetSuite MCP server over Streamable HTTP. Exposes 69 tools for managing customers, vendors, inventory, sales orders, Pro-Forma Invoices, invoices, purchase orders, vendor bills, locations, GL accounts, and subsidiaries via the NetSuite REST API.
+NetSuite MCP server over Streamable HTTP. Exposes 70 tools for managing customers, vendors, inventory, sales orders, Pro-Forma Invoices, invoices, purchase orders, vendor bills, locations, GL accounts, subsidiaries, and record metadata via the NetSuite REST API.
 
 ## Prerequisites
 
@@ -73,7 +73,7 @@ curl http://localhost:3000/health
 - **Protocol**: MCP Streamable HTTP (POST/GET/DELETE)
 - **Health check**: `http://localhost:3000/health`
 
-## Available Tools (69)
+## Available Tools (70)
 
 | Module | Tools |
 |---|---|
@@ -87,6 +87,7 @@ curl http://localhost:3000/health
 | **Location** | location_list, location_get, location_search, location_create, location_update, location_delete |
 | **Account** | account_list, account_get, account_search, account_create, account_update, account_delete |
 | **Subsidiary** | subsidiary_list, subsidiary_get, subsidiary_search, subsidiary_create, subsidiary_update, subsidiary_delete |
+| **Metadata** | metadata_get — list a record type's `filterable` fields (valid in `q`) and full field schema; pass `raw=true` for NetSuite's full OpenAPI |
 
 ## Development
 

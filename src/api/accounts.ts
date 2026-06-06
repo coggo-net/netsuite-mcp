@@ -27,7 +27,7 @@ export function registerAccountAPI(client: NetSuiteClient) {
 		search(keyword: string, params: Omit<ListParams, "q"> = {}) {
 			return client.listRecords(RECORD_TYPE, {
 				...params,
-				q: `acctName CONTAIN "${keyword}"`,
+				q: `fullName CONTAIN "${keyword}"`,
 			});
 		},
 	};

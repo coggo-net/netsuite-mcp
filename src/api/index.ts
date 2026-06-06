@@ -4,6 +4,7 @@ import { registerCustomerAPI } from "./customers.ts";
 import { registerInventoryAPI } from "./inventory.ts";
 import { registerInvoiceAPI } from "./invoices.ts";
 import { registerLocationAPI } from "./locations.ts";
+import { registerMetadataAPI } from "./metadata.ts";
 import { registerProformaInvoiceAPI } from "./proforma-invoices.ts";
 import { registerPurchaseOrderAPI } from "./purchase-orders.ts";
 import { registerSalesOrderAPI } from "./sales-orders.ts";
@@ -24,6 +25,7 @@ export function createAPI(client: NetSuiteClient) {
 		locations: registerLocationAPI(client),
 		accounts: registerAccountAPI(client),
 		subsidiaries: registerSubsidiaryAPI(client),
+		metadata: registerMetadataAPI(client),
 	};
 }
 

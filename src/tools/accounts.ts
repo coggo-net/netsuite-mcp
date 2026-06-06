@@ -12,7 +12,7 @@ export function registerAccountTools(server: McpServer, api: AccountAPI) {
 				.string()
 				.optional()
 				.describe(
-					'Optional NetSuite Record API filter expression, e.g. acctName CONTAIN "Expense"',
+					'Optional NetSuite Record API filter expression, e.g. fullName CONTAIN "Expense" or acctNumber CONTAIN "2000"',
 				),
 			limit: z
 				.number()
@@ -44,7 +44,7 @@ export function registerAccountTools(server: McpServer, api: AccountAPI) {
 
 	server.tool(
 		"account_search",
-		"Search GL accounts by name keyword. Uses NetSuite's CONTAIN operator on the `acctName` field. Useful for finding A/P, A/R, expense, or revenue accounts to use in vendor bills, invoices, and journal entries.",
+		"Search GL accounts by name keyword. Uses NetSuite's CONTAIN operator on the `fullName` field (the only name-style field in account's filterable set). Useful for finding A/P, A/R, expense, or revenue accounts to use in vendor bills, invoices, and journal entries.",
 		{
 			keyword: z.string().describe("Account name keyword to search"),
 			limit: z.number().optional().describe("Max records to return"),

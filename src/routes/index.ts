@@ -9,6 +9,7 @@ import {
 import { inventoryRoutes } from "./inventory.ts";
 import { invoiceRoutes } from "./invoices.ts";
 import { locationRoutes } from "./locations.ts";
+import { metadataRoutes } from "./metadata.ts";
 import { purchaseOrderRoutes } from "./purchase-orders.ts";
 import { salesOrderRoutes } from "./sales-orders.ts";
 import { subsidiaryRoutes } from "./subsidiaries.ts";
@@ -27,6 +28,7 @@ export function createRestAPI(api: NetSuiteAPI) {
 		...locationRoutes(api.locations),
 		...accountRoutes(api.accounts),
 		...subsidiaryRoutes(api.subsidiaries),
+		...metadataRoutes(api.metadata),
 	];
 
 	return {

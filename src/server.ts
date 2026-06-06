@@ -10,6 +10,7 @@ import { registerCustomerTools } from "./tools/customers.ts";
 import { registerInventoryTools } from "./tools/inventory.ts";
 import { registerInvoiceTools } from "./tools/invoices.ts";
 import { registerLocationTools } from "./tools/locations.ts";
+import { registerMetadataTools } from "./tools/metadata.ts";
 import { registerPurchaseOrderTools } from "./tools/purchase-orders.ts";
 import { registerSalesOrderTools } from "./tools/sales-orders.ts";
 import { registerSubsidiaryTools } from "./tools/subsidiaries.ts";
@@ -43,6 +44,7 @@ export function createMcpServer() {
 	registerLocationTools(server, api.locations);
 	registerAccountTools(server, api.accounts);
 	registerSubsidiaryTools(server, api.subsidiaries);
+	registerMetadataTools(server, api.metadata);
 
 	return server;
 }
