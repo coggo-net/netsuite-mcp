@@ -52,6 +52,13 @@ export function registerInventoryAPI(client: NetSuiteClient) {
 			return client.createRecord("inventoryNumber", data);
 		},
 
+		findLotByName(keyword: string, params: Omit<ListParams, "q"> = {}) {
+			return client.listRecords("inventoryNumber", {
+				...params,
+				q: `inventoryNumber CONTAIN "${keyword}"`,
+			});
+		},
+
 		searchLotNumbers(itemId: string, locationId?: string) {
 			assertNumericId(itemId, "itemId");
 			if (locationId) assertNumericId(locationId, "locationId");

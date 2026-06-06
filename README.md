@@ -1,6 +1,6 @@
 # netsuite-mcp
 
-NetSuite MCP server over Streamable HTTP. Exposes 70 tools for managing customers, vendors, inventory, sales orders, Pro-Forma Invoices, invoices, purchase orders, vendor bills, locations, GL accounts, subsidiaries, and record metadata via the NetSuite REST API.
+NetSuite MCP server over Streamable HTTP. Exposes 71 tools for managing customers, vendors, inventory, sales orders, Pro-Forma Invoices, invoices, purchase orders, vendor bills, locations, GL accounts, subsidiaries, and record metadata via the NetSuite REST API.
 
 ## Prerequisites
 
@@ -73,13 +73,13 @@ curl http://localhost:3000/health
 - **Protocol**: MCP Streamable HTTP (POST/GET/DELETE)
 - **Health check**: `http://localhost:3000/health`
 
-## Available Tools (70)
+## Available Tools (71)
 
 | Module | Tools |
 |---|---|
 | **Customer** | customer_list, customer_get, customer_search, customer_create, customer_update, customer_delete |
 | **Vendor** | vendor_list, vendor_get, vendor_search, vendor_create, vendor_update, vendor_delete |
-| **Inventory** | inventory_list, inventory_get, inventory_search, inventory_query_stock, inventory_search_lot_numbers, inventory_lot_create, inventory_create, inventory_update, inventory_adjust, inventory_transfer |
+| **Inventory** | inventory_list, inventory_get, inventory_search, inventory_query_stock, inventory_search_lot_numbers, inventory_find_lot_by_name, inventory_lot_create, inventory_create, inventory_update, inventory_adjust, inventory_transfer |
 | **Sales Order / PI** | sales_order_list, sales_order_get, sales_order_search, sales_order_create, sales_order_update, sales_order_delete, pi_list_recent |
 | **Invoice** | invoice_list, invoice_get, invoice_search, invoice_get_overdue, invoice_create, invoice_update, invoice_delete |
 | **Purchase Order** | purchase_order_list, purchase_order_get, purchase_order_search, purchase_order_create, purchase_order_update, purchase_order_delete, purchase_order_receive |

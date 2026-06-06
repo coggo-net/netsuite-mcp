@@ -69,6 +69,17 @@ export function inventoryRoutes(api: InventoryAPI): RouteDef[] {
 				api.searchLotNumbers(body.itemId, body.locationId),
 		}),
 		defineRoute({
+			method: "get",
+			path: "/api/inventory/lot-numbers/by-name",
+			operationId: "inventory_find_lot_by_name",
+			summary: "Find an inventoryNumber (lot/serial) by name",
+			description:
+				"Look up an inventoryNumber master record by its lot/serial string (CONTAIN match on the `inventoryNumber` field). Returns id and links — typically used to resolve a lot name printed on an unstuffing/receiving sheet to a NetSuite internal id, so you can attach it as `receiptInventoryNumber: {id}` on an inbound transaction. Unlike `inventory_search_lot_numbers`, this does not require knowing the item or filter by on-hand quantity — it works on the lot master regardless of stock.",
+			query: searchQuery,
+			handler: async ({ query }) =>
+				api.findLotByName(query.keyword, { limit: query.limit }),
+		}),
+		defineRoute({
 			method: "post",
 			path: "/api/inventory/lots",
 			operationId: "inventory_lot_create",

@@ -92,6 +92,24 @@ export function registerInventoryTools(server: McpServer, api: InventoryAPI) {
 	);
 
 	server.tool(
+		"inventory_find_lot_by_name",
+		"Look up an inventoryNumber (lot/serial) master record by its lot string (CONTAIN match on `inventoryNumber`). Returns id and links — use when you have a lot name from a paper receiving/unstuffing sheet and need to resolve it to a NetSuite internal id to attach as receiptInventoryNumber: {id} on an inbound transaction. Unlike inventory_search_lot_numbers, this works on the lot master regardless of stock and does not require an itemId.",
+		{
+			keyword: z
+				.string()
+				.describe("Lot/serial number string to search for, e.g. 'SBLF2649'"),
+			limit: z.number().optional().describe("Max records to return"),
+		},
+		async ({ keyword, limit }) => {
+			try {
+				return ok(await api.findLotByName(keyword, { limit }));
+			} catch (e) {
+				return err(e);
+			}
+		},
+	);
+
+	server.tool(
 		"inventory_lot_create",
 		`Pre-create an inventoryNumber (lot/serial) master record so it can be referenced by id on inbound transactions.
 
