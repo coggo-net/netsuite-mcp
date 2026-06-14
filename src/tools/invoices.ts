@@ -164,6 +164,47 @@ Example — replace all lines: {"item": {"items": [{"item": {"id": "225"}, "quan
 	);
 
 	server.tool(
+		"invoice_add_lines",
+		`Append NEW line items to an existing invoice WITHOUT replacing the existing lines.
+
+Use this instead of invoice_update when you only want to ADD lines. invoice_update
+sends the full item sublist with ?replace=item, which re-issues every existing line's
+lot allocation — on a lot-tracked invoice that re-allocates stock and fails once a
+prior update has committed lots ("You only have N available"). This tool uses
+NetSuite's PATCH merge mode: the lines you send are appended, and existing lines plus
+their committed lot assignments are left untouched.
+
+Provide ONLY the new lines. Each line has the same shape as invoice_create lines:
+- item (object): {id: "..."} — required.
+- quantity (number): required.
+- rate (number), amount (number), description (string), taxCode {id}, etc.
+- location (object): {id: "..."} — needed for lot auto-assignment.
+- inventoryDetail (object): explicit lot/serial assignment for the new line. Omit to
+  let the API FIFO-auto-assign across available lots (requires a line-level location).
+
+Example — add two lot-tracked lines:
+{
+  "id": "<invoiceId>",
+  "lines": [
+    {"item": {"id": "1662"}, "quantity": 1, "rate": 2300, "location": {"id": "1"}}
+  ]
+}`,
+		{
+			id: z.string().describe("Invoice internal ID"),
+			lines: z
+				.array(z.record(z.string(), z.unknown()))
+				.describe("New line items to append — see tool description"),
+		},
+		async ({ id, lines }) => {
+			try {
+				return ok(await api.addLines(id, lines));
+			} catch (e) {
+				return err(e);
+			}
+		},
+	);
+
+	server.tool(
 		"invoice_delete",
 		"Delete an invoice by internal ID. This action is irreversible.",
 		{ id: z.string().describe("Invoice internal ID") },

@@ -258,12 +258,21 @@ export class NetSuiteClient {
 		recordType: string,
 		id: string,
 		data: Record<string, unknown>,
+		opts: { replaceSublists?: boolean } = {},
 	): Promise<Record<string, unknown>> {
 		// NetSuite REST defaults to merging sublists on PATCH — sending an `item`
 		// array would APPEND to the existing lines instead of replacing them.
 		// Auto-detect sublists in the body (the `{ items: [...] }` envelope) and
 		// pass them via ?replace=... so the provided array is the new sublist.
-		const sublists = detectSublists(data);
+		//
+		// Set replaceSublists:false to keep the default merge/append behavior —
+		// the sent lines are appended as NEW lines and existing lines (plus their
+		// committed lot allocations) are left untouched. Use this to ADD lines to
+		// a lot-tracked transaction without re-issuing every existing line's lot
+		// assignment (a full replace re-allocates stock and can fail on lots the
+		// prior replace already consumed).
+		const replaceSublists = opts.replaceSublists ?? true;
+		const sublists = replaceSublists ? detectSublists(data) : [];
 		const qs = sublists.length ? `?replace=${sublists.join(",")}` : "";
 		const res = await this.fetchRaw(
 			"PATCH",

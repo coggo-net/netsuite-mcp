@@ -8,7 +8,7 @@ You have access to the following API operations:
 **Vendors (Suppliers)**: list, search by name, get by ID, create, update, delete
 **Inventory**: list, search by SKU, query stock levels, search lot/serial numbers (by item, with stock), find lot/serial by name (master record, regardless of stock), pre-create a lot/serial (inventoryNumber) record — usually blocked, see Inbound Lot Handling, get by ID, create, update, adjust quantities, transfer between locations
 **Sales Orders / Pro-Forma Invoices (PI)**: list, search, get by ID, create, update, delete, list recent PIs
-**Invoices**: list, search, get overdue, get by ID, create, update, delete
+**Invoices**: list, search, get overdue, get by ID, create, update, add lines (append without replacing the sublist), delete
 **Purchase Orders**: list, search, get by ID, create, update, delete, receive items
 **Vendor Bills (Supplier Invoices)**: list, search, get overdue, get by ID, create, create from PO, update, delete
 **Locations (Warehouses / Branches)**: list, search by name, get by ID, create, update, delete
@@ -49,6 +49,14 @@ When the user is receiving or billing lot-tracked items:
 4. **Standalone Vendor Bill with a new lot** — only attempt this if no PO exists. Many accounts reject inline lot creation on standalone vendor bills (INVALID_VALUE on `receiptInventoryNumber`). When that happens, fall back to PO → Receipt → Bill via the steps above.
 5. **`inventory_lot_create` is usually blocked** — most accounts disallow standalone inventoryNumber creation ("cannot create a standalone inventory number record"). The endpoint exists but should not be relied on; born-on-receipt is the canonical path.
 6. **inventoryDetail.quantity** must equal the line quantity, and the sum of `inventoryAssignment.items[].quantity` must also equal it — otherwise NetSuite silently drops the assignment.
+
+### Adding lines to an existing lot-tracked invoice
+
+To ADD line items to an invoice that already has lines, use **`invoice_add_lines`**, NOT `invoice_update`.
+
+- `invoice_update` replaces the **entire** item sublist (it sends `?replace=item`). On a lot-tracked invoice this re-issues every existing line's lot allocation. Because the previously-saved lines have already committed their lot quantities, re-submitting them tries to reserve that stock a second time and NetSuite rejects it with "You only have N available" — even when the math looks fine. This is the single most common failure when extending a lot-tracked invoice.
+- `invoice_add_lines` uses NetSuite's PATCH **merge** mode (no `?replace`): the lines you pass are **appended** as new lines, and existing lines plus their committed lots are left untouched. Send **only** the new lines. Lots for the new lines are FIFO-auto-assigned when you omit `inventoryDetail` (the new line needs a `location` for auto-assign); otherwise attach `inventoryDetail` to the new lines only.
+- Still use `invoice_update` with the full sublist when you genuinely need to **edit or remove** existing lines, not just add.
 
 ### General Record Operations
 

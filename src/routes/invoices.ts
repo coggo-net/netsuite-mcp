@@ -6,7 +6,7 @@ import {
 	type RouteDef,
 	searchQuery,
 } from "./framework.ts";
-import { invoiceBody, invoiceBodyPartial } from "./schemas.ts";
+import { invoiceBody, invoiceBodyPartial, lineItems } from "./schemas.ts";
 
 export function invoiceRoutes(api: InvoiceAPI): RouteDef[] {
 	return [
@@ -69,6 +69,17 @@ export function invoiceRoutes(api: InvoiceAPI): RouteDef[] {
 				"Update an existing invoice by internal ID (PATCH). Only provided header fields are updated. If the item sublist is included, it FULLY REPLACES the existing line items — provide the complete set of lines you want to keep. Omit item to leave existing lines untouched.",
 			body: invoiceBodyPartial,
 			handler: async ({ params, body }) => api.update(params.id, body),
+		}),
+		defineRoute({
+			method: "post",
+			path: "/api/invoices/:id/lines",
+			operationId: "invoice_add_lines",
+			summary: "Append line items to an invoice",
+			description:
+				"Append NEW line items to an existing invoice WITHOUT replacing the existing item sublist (NetSuite PATCH merge mode). Send only the lines you want to add. Existing lines — and their committed lot allocations — are left untouched, so this avoids the stock re-allocation failures that invoice_update (full sublist replace) hits on lot-tracked invoices. Lots for the new lines are FIFO-auto-assigned when inventoryDetail is omitted (a line-level location is required for auto-assign, same as PI/SO); otherwise provide inventoryDetail explicitly for the new lines only.",
+			body: lineItems,
+			successStatus: 200,
+			handler: async ({ params, body }) => api.addLines(params.id, body.items),
 		}),
 		defineRoute({
 			method: "delete",
